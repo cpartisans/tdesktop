@@ -18,6 +18,7 @@ jobs:
 
     env:
       IMAGE_TAG: ghcr.io/${{ github.repository }}/centos_env:latest
+      DEV_IMAGE_TAG: ghcr.io/${{ github.repository }}/centos_dev:latest
 
     steps:
       - name: Clone.
@@ -34,8 +35,14 @@ jobs:
           poetry install
           DEBUG= LTO= poetry run gen_dockerfile | DOCKER_BUILDKIT=1 docker build -t $IMAGE_TAG -
 
-      - name: Push the Docker image.
+      - name: Push the Main Docker image.
         if: ${{ github.ref_name == github.event.repository.default_branch }}
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
           docker push $IMAGE_TAG
+
+      - name: Push the Dev Docker image.
+        if: ${{ github.ref_name != github.event.repository.default_branch }}
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+          docker push $DEV_IMAGE_TAG
