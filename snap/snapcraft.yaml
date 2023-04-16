@@ -110,7 +110,6 @@ parts:
       - python3
       - libasound2-dev
       - libavif-dev
-      - libglib2.0-dev
       - libheif-dev
       - libopus-dev
       - libpulse-dev
@@ -123,7 +122,6 @@ parts:
     stage-packages:
       - libasound2
       - libavif13
-      - libglib2.0-0
       - libheif1
       - libopus0
       - libpulse0
@@ -187,7 +185,7 @@ parts:
     override-pull: |
       craftctl default
       cp -r . "$CRAFT_STAGE/patches"
-    override-stage: |
+    override-prime: |
       rm -rf patches
     stage: [-./*]
 
@@ -196,6 +194,8 @@ parts:
     source-subdir: qt
     plugin: make
     make-parameters: ["FLAVOR=qt5"]
+    build-environment:
+      - LD_LIBRARY_PATH: $CRAFT_STAGE/usr/lib/$CRAFT_ARCH_TRIPLET${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
     build-packages:
       - build-essential
       - dpkg-dev
@@ -254,16 +254,13 @@ parts:
   glibmm:
     source: https://github.com/GNOME/glibmm.git
     source-depth: 1
-    source-tag: 2.72.1
+    source-tag: 2.76.0
     plugin: meson
     build-packages:
       - meson
       - mm-common
       - ninja-build
-      - libglib2.0-dev
       - libxml-parser-perl
-    stage-packages:
-      - libglib2.0-0
     meson-parameters:
       - --buildtype=release
       - --prefix=/usr
@@ -301,9 +298,6 @@ parts:
       - -DJPEGXL_ENABLE_SJPEG=OFF
       - -DJPEGXL_ENABLE_OPENEXR=OFF
       - -DJPEGXL_ENABLE_SKCMS=OFF
-    override-pull: |
-      craftctl default
-      sed -i 's/NOT JPEGXL_ENABLE_SKCMS/0/' lib/jxl.cmake
     stage:
       - -./usr/lib/$CRAFT_ARCH_TRIPLET/libbrotli*
     prime:
@@ -421,7 +415,6 @@ parts:
       - libegl-dev
       - libfontconfig1-dev
       - libfreetype-dev
-      - libglib2.0-dev
       - libglx-dev
       - libgtk-3-dev
       - libharfbuzz-dev
@@ -459,7 +452,6 @@ parts:
       - libegl1
       - libfontconfig1
       - libfreetype6
-      - libglib2.0-0
       - libglx0
       - libgtk-3-0
       - libharfbuzz0b
@@ -575,7 +567,6 @@ parts:
       - libegl-dev
       - libgbm-dev
       - libgl-dev
-      - libglib2.0-dev
       - libopenh264-dev
       - libopus-dev
       - libpipewire-0.3-dev
@@ -593,7 +584,6 @@ parts:
       - libegl1
       - libgbm1
       - libgl1
-      - libglib2.0-0
       - libopenh264-6
       - libopus0
       - libvpx7
@@ -616,5 +606,6 @@ parts:
       - -./usr/lib/$CRAFT_ARCH_TRIPLET/*.a
     after:
       - ffmpeg
+      - glibmm
       - mozjpeg
       - openssl
