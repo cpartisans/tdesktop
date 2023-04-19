@@ -29,11 +29,19 @@ jobs:
       - name: First set up.
         run: curl -sSL https://install.python-poetry.org | python3 -
 
-      - name: Docker image build.
+      - name: Docker main image build.
+        if: ${{ github.ref_name == github.event.repository.default_branch }}
         run: |
           cd Telegram/build/docker/centos_env
           poetry install
           DEBUG= LTO= poetry run gen_dockerfile | DOCKER_BUILDKIT=1 docker build -t $IMAGE_TAG -
+
+      - name: Docker dev image build.
+        if: ${{ github.ref_name != github.event.repository.default_branch }}
+        run: |
+          cd Telegram/build/docker/centos_env
+          poetry install
+          DEBUG= LTO= poetry run gen_dockerfile | DOCKER_BUILDKIT=1 docker build -t $DEV_IMAGE_TAG -
 
       - name: Push the Main Docker image.
         if: ${{ github.ref_name == github.event.repository.default_branch }}
