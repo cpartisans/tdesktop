@@ -1609,7 +1609,8 @@ base::unique_qptr<Ui::PopupMenu> StickersListWidget::fillContextMenu(
 		type,
 		SendMenu::DefaultSilentCallback(send),
 		SendMenu::DefaultScheduleCallback(this, type, send),
-		SendMenu::DefaultAutoDeleteCallback(this, send));
+		SendMenu::DefaultWhenOnlineCallback(send),
+        SendMenu::DefaultAutoDeleteCallback(this, send));
 
 	const auto window = _controller;
 	const auto toggleFavedSticker = [=] {
@@ -2609,21 +2610,19 @@ void StickersListWidget::removeMegagroupSet(bool locally) {
 	const auto cancelled = [](Fn<void()> &&close) {
 		close();
 	};
-	const auto confirmed = crl::guard(this, [this, group = _megagroupSet](
-			Fn<void()> &&close) {
-		Expects(group->mgInfo != nullptr);
-
-		if (group->mgInfo->stickerSet) {
-			session().api().setGroupStickerSet(group, {});
-		}
-		close();
-	});
-	auto confirmation_box = Ui::MakeConfirmBox({
+	checkHideWithBox(_controller->show(Ui::MakeConfirmBox({
 		.text = tr::lng_stickers_remove_group_set(),
-		.confirmed = std::move(confirmed),
+		.confirmed = crl::guard(this, [this, group = _megagroupSet](
+				Fn<void()> &&close) {
+			Expects(group->mgInfo != nullptr);
+
+			if (group->mgInfo->stickerSet) {
+				session().api().setGroupStickerSet(group, {});
+			}
+			close();
+		}),
 		.cancelled = cancelled,
-	});
-	checkHideWithBox(_controller->show(std::move(confirmation_box)));
+	})));
 }
 
 void StickersListWidget::removeSet(uint64 setId) {

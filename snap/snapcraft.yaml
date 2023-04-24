@@ -21,11 +21,6 @@ apps:
     common-id: org.telegram.desktop
     desktop: usr/share/applications/org.telegram.desktop.desktop
     autostart: telegram-desktop_telegram-desktop.desktop
-    environment:
-      # Tell glib to use portals on file associations handling.
-      GTK_USE_PORTAL: 1
-      # Use sandboxed ibus api
-      IBUS_USE_PORTAL: 1
     plugs:
       - alsa
       - audio-playback
@@ -333,7 +328,7 @@ parts:
   openal:
     source: https://github.com/kcat/openal-soft.git
     source-depth: 1
-    source-tag: 1.22.2
+    source-tag: 1.23.0
     plugin: cmake
     build-environment:
       - LDFLAGS: -s
@@ -491,7 +486,7 @@ parts:
     override-pull: |
       QT=6.5.0
 
-      git clone -b v${QT}-beta3 --depth=1 git://code.qt.io/qt/qt5.git .
+      git clone -b v${QT} --depth=1 https://code.qt.io/qt/qt5.git .
       git submodule update --init --recursive --depth=1 qtbase qtdeclarative qtwayland qtimageformats qtsvg qt5compat qtshadertools
 
       cd qtbase
@@ -531,6 +526,7 @@ parts:
       - -./usr/mkspecs
       - -./usr/modules
     after:
+      - glibmm
       - mozjpeg
       - openssl
       - patches

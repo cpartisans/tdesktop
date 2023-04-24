@@ -1284,6 +1284,7 @@ void FieldAutocomplete::Inner::contextMenuEvent(QContextMenuEvent *e) {
 		type,
 		SendMenu::DefaultSilentCallback(send),
 		SendMenu::DefaultScheduleCallback(this, type, send),
+        SendMenu::DefaultWhenOnlineCallback(send),
 		SendMenu::DefaultAutoDeleteCallback(this, send));
 
 	if (!_menu->empty()) {

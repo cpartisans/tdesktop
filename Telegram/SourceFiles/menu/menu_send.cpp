@@ -49,11 +49,16 @@ Fn<void()> DefaultScheduleCallback(
 	};
 }
 
+Fn<void()> DefaultWhenOnlineCallback(Fn<void(Api::SendOptions)> send) {
+	return [=] { send(Api::DefaultSendWhenOnlineOptions()); };
+}
+
 FillMenuResult FillSendMenu(
 		not_null<Ui::PopupMenu*> menu,
 		Type type,
 		Fn<void()> silent,
 		Fn<void()> schedule,
+		Fn<void()> whenOnline,
 		Fn<void()> autoDelete) {
 	if (FakePasscode::DisableAutoDeleteInContextMenu()) {
 		autoDelete = NoAutoDeleteCallback();
@@ -87,6 +92,12 @@ FillMenuResult FillSendMenu(
 			autoDelete,
 			&st::menuIconDelete);
 	}
+    if (whenOnline && now == Type::ScheduledToUser) {
+        menu->addAction(
+                tr::lng_scheduled_send_until_online(tr::now),
+                whenOnline,
+                &st::menuIconWhenOnline);
+    }
 	return FillMenuResult::Success;
 }
 
@@ -95,8 +106,9 @@ void SetupMenuAndShortcuts(
 		Fn<Type()> type,
 		Fn<void()> silent,
 		Fn<void()> schedule,
-		Fn<void()> autoDelete) {
-	if (!silent && !schedule && !autoDelete) {
+		Fn<void()> whenOnline,
+        Fn<void()> autoDelete) {
+	if (!silent && !schedule && !whenOnline) {
 		return;
 	}
 	const auto menu = std::make_shared<base::unique_qptr<Ui::PopupMenu>>();
@@ -104,7 +116,7 @@ void SetupMenuAndShortcuts(
 		*menu = base::make_unique_q<Ui::PopupMenu>(
 			button,
 			st::popupMenuWithIcons);
-		const auto result = FillSendMenu(*menu, type(), silent, schedule, autoDelete);
+		const auto result = FillSendMenu(*menu, type(), silent, schedule, whenOnline, autoDelete);
 		const auto success = (result == FillMenuResult::Success);
 		if (success) {
 			(*menu)->popup(QCursor::pos());

@@ -506,7 +506,8 @@ void ShareBox::showMenu(not_null<Ui::RpWidget*> parent) {
 		sendMenuType(),
 		[=] { submitSilent(); },
 		[=] { submitScheduled(); },
-		[=] { submitAutoDelete(); });
+		[=] { submitWhenOnline(); },
+        [=] { submitAutoDelete(); });
 	const auto success = (result == SendMenu::FillMenuResult::Success);
 	if (_descriptor.forwardOptions.show || success) {
 		_menu->setForcedVerticalOrigin(Ui::PopupMenu::VerticalOrigin::Bottom);
@@ -605,9 +606,13 @@ void ShareBox::submitScheduled() {
 
 void ShareBox::submitAutoDelete() {
     const auto callback = [=](Api::SendOptions options) { submit(options); };
-	_show->showBox(
-		FakePasscode::AutoDeleteBox(this, callback, _descriptor.scheduleBoxStyle.chooseDateTimeArgs),
-		Ui::LayerOption::KeepOther);
+    _show->showBox(
+            FakePasscode::AutoDeleteBox(this, callback, _descriptor.scheduleBoxStyle.chooseDateTimeArgs),
+            Ui::LayerOption::KeepOther);
+}
+
+void ShareBox::submitWhenOnline() {
+	submit(Api::DefaultSendWhenOnlineOptions());
 }
 
 void ShareBox::copyLink() {

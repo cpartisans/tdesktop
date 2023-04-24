@@ -988,7 +988,9 @@ void Filler::addManageChat() {
 	}
 	const auto peer = _peer;
 	const auto navigation = _controller;
-	const auto text = (peer->isChat() || peer->isMegagroup())
+	const auto text = peer->isUser()
+		? tr::lng_manage_bot_title(tr::now)
+		: (peer->isChat() || peer->isMegagroup())
 		? tr::lng_manage_group_title(tr::now)
 		: tr::lng_manage_channel_title(tr::now);
 	_addAction(text, [=] {
@@ -1042,7 +1044,7 @@ void Filler::addThemeEdit() {
 	}
 	const auto controller = _controller;
 	_addAction(
-		tr::lng_chat_theme_change(tr::now),
+		tr::lng_chat_theme_wallpaper(tr::now),
 		[=] { controller->toggleChooseChatTheme(user); },
 		&st::menuIconChangeColors);
 }
@@ -1922,7 +1924,8 @@ QPointer<Ui::BoxContent> ShowForwardMessagesBox(
 			type,
 			SendMenu::DefaultSilentCallback(submit),
 			SendMenu::DefaultScheduleCallback(state->box, type, submit),
-			SendMenu::DefaultAutoDeleteCallback(state->box, submit));
+			SendMenu::DefaultWhenOnlineCallback(submit),
+            SendMenu::DefaultAutoDeleteCallback(state->box, submit));
 		const auto success = (result == SendMenu::FillMenuResult::Success);
 		if (showForwardOptions || success) {
 			state->menu->setForcedVerticalOrigin(
@@ -2191,7 +2194,7 @@ void ToggleMessagePinned(
 	}
 	if (pin) {
 		navigation->parentController()->show(
-			Box(PinMessageBox, item->history()->peer, item->id),
+			Box(PinMessageBox, item),
 			Ui::LayerOption::CloseOther);
 	} else {
 		const auto peer = item->history()->peer;

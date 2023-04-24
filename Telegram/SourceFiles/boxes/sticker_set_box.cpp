@@ -1024,7 +1024,8 @@ void StickerSetBox::Inner::contextMenuEvent(QContextMenuEvent *e) {
 			type,
 			SendMenu::DefaultSilentCallback(sendSelected),
 			SendMenu::DefaultScheduleCallback(this, type, sendSelected),
-			SendMenu::DefaultAutoDeleteCallback(this, sendSelected));
+			SendMenu::DefaultWhenOnlineCallback(sendSelected),
+            SendMenu::DefaultAutoDeleteCallback(this, sendSelected));
 
 		const auto controller = _controller;
 		const auto toggleFavedSticker = [=] {

@@ -396,7 +396,7 @@ void SendFilesBox::enqueueNextPrepare() {
 }
 
 void SendFilesBox::prepare() {
-    initSendWay();
+	initSendWay();
 	setupCaption();
 	setupSendWayControls();
 	preparePreview();
@@ -509,7 +509,8 @@ void SendFilesBox::refreshButtons() {
 			[=] { return _sendMenuType; },
 			[=] { sendSilent(); },
 			[=] { sendScheduled(); },
-			[=] { sendAutoDelete(); });
+			[=] { sendWhenOnline(); }
+            [=] { sendAutoDelete(); });
 	}
 	addButton(tr::lng_cancel(), [=] { closeBox(); });
 
@@ -587,6 +588,7 @@ void SendFilesBox::addMenuButton() {
 				_sendMenuType,
 				[=] { sendSilent(); },
 				[=] { sendScheduled(); },
+				[=] { sendWhenOnline(); },
                 [=] { sendAutoDelete(); });
 		}
 		_menu->popup(QCursor::pos());
@@ -1397,6 +1399,10 @@ void SendFilesBox::sendAutoDelete() {
     SendMenu::DefaultAutoDeleteCallback(this,
         [=](auto box) { _controller->show(std::move(box), Ui::LayerOption::KeepOther); },
         [=](auto opts) { send(opts); })();
+}
+
+void SendFilesBox::sendWhenOnline() {
+	send(Api::DefaultSendWhenOnlineOptions());
 }
 
 SendFilesBox::~SendFilesBox() = default;

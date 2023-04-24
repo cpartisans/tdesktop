@@ -382,6 +382,7 @@ base::unique_qptr<Ui::PopupMenu> GifsListWidget::fillContextMenu(
 		type,
 		SendMenu::DefaultSilentCallback(send),
 		SendMenu::DefaultScheduleCallback(this, type, send),
+        SendMenu::DefaultWhenOnlineCallback(send),
 		SendMenu::DefaultAutoDeleteCallback(this, send));
 
 	if (const auto item = _mosaic.maybeItemAt(_selected)) {

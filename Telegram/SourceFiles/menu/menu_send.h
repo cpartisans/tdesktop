@@ -42,20 +42,23 @@ Fn<void()> DefaultScheduleCallback(
 	not_null<Ui::RpWidget*> parent,
 	Type type,
 	Fn<void(Api::SendOptions)> send);
+Fn<void()> DefaultWhenOnlineCallback(Fn<void(Api::SendOptions)> send);
 
 FillMenuResult FillSendMenu(
 	not_null<Ui::PopupMenu*> menu,
 	Type type,
 	Fn<void()> silent,
 	Fn<void()> schedule,
-	Fn<void()> autoDelete);
+	Fn<void()> whenOnline,
+    Fn<void()> autoDelete);
 
 void SetupMenuAndShortcuts(
 	not_null<Ui::RpWidget*> button,
 	Fn<Type()> type,
 	Fn<void()> silent,
 	Fn<void()> schedule,
-	Fn<void()> autoDelete);
+	Fn<void()> whenOnline,
+    Fn<void()> autoDelete);
 
 void SetupUnreadMentionsMenu(
 	not_null<Ui::RpWidget*> button,
