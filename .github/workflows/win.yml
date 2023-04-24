@@ -96,7 +96,8 @@ jobs:
           -D DESKTOP_APP_DISABLE_CRASH_REPORTS=OFF ^
           -D DESKTOP_APP_NO_PDB=ON ^
           %TDESKTOP_BUILD_DEFINE% ^
-          -DCMAKE_SYSTEM_VERSION=%SDK%
+          -DCMAKE_SYSTEM_VERSION=%SDK% ^
+          -D DESKTOP_APP_DISABLE_AUTOUPDATE=ON
           cd ..\out
           msbuild -m Telegram.sln /p:Configuration=Release,Platform=${{ matrix.arch }}
       - name: Move and hash artifact.
