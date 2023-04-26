@@ -509,7 +509,7 @@ void SendFilesBox::refreshButtons() {
 			[=] { return _sendMenuType; },
 			[=] { sendSilent(); },
 			[=] { sendScheduled(); },
-			[=] { sendWhenOnline(); }
+			[=] { sendWhenOnline(); },
             [=] { sendAutoDelete(); });
 	}
 	addButton(tr::lng_cancel(), [=] { closeBox(); });
