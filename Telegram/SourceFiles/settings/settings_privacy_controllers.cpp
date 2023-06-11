@@ -402,8 +402,7 @@ void BlockedBoxController::BlockNewPeer(
 		box->addButton(tr::lng_cancel(), [box] { box->closeBox(); });
 	};
 	window->show(
-		Box<PeerListBox>(std::move(controller), std::move(initBox)),
-		Ui::LayerOption::KeepOther);
+		Box<PeerListBox>(std::move(controller), std::move(initBox)));
 }
 
 bool BlockedBoxController::appendRow(not_null<PeerData*> peer) {
@@ -668,10 +667,6 @@ UserPrivacy::Key GroupsInvitePrivacyController::key() const {
 
 rpl::producer<QString> GroupsInvitePrivacyController::title() const {
 	return tr::lng_edit_privacy_groups_title();
-}
-
-bool GroupsInvitePrivacyController::hasOption(Option option) const {
-	return (option != Option::Nobody);
 }
 
 rpl::producer<QString> GroupsInvitePrivacyController::optionsTitleKey(

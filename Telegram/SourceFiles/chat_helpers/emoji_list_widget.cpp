@@ -19,6 +19,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/effects/premium_graphics.h"
 #include "ui/emoji_config.h"
 #include "ui/painter.h"
+#include "ui/power_saving.h"
 #include "ui/ui_utility.h"
 #include "ui/cached_round_corners.h"
 #include "boxes/sticker_set_box.h"
@@ -369,12 +370,11 @@ void EmojiColorPicker::drawVariant(QPainter &p, int variant) {
 EmojiListWidget::EmojiListWidget(
 	QWidget *parent,
 	not_null<Window::SessionController*> controller,
-	Window::GifPauseReason level,
+	PauseReason level,
 	Mode mode)
 : EmojiListWidget(parent, {
-	.session = &controller->session(),
+	.show = controller->uiShow(),
 	.mode = mode,
-	.controller = controller,
 	.paused = Window::PausedIn(controller, level),
 }) {
 }
@@ -385,9 +385,9 @@ EmojiListWidget::EmojiListWidget(
 : Inner(
 	parent,
 	descriptor.st ? *descriptor.st : st::defaultEmojiPan,
-	descriptor.session,
+	descriptor.show,
 	std::move(descriptor.paused))
-, _controller(descriptor.controller)
+, _show(std::move(descriptor.show))
 , _mode(descriptor.mode)
 , _staticCount(_mode == Mode::Full ? kEmojiSectionCount : 1)
 , _premiumIcon(_mode == Mode::EmojiStatus
@@ -465,7 +465,7 @@ EmojiListWidget::~EmojiListWidget() {
 }
 
 void EmojiListWidget::setupSearch() {
-	const auto session = &_controller->session();
+	const auto session = &_show->session();
 	_search = MakeSearch(this, st(), [=](std::vector<QString> &&query) {
 		_nextSearchQuery = std::move(query);
 		InvokeQueued(this, [=] {
@@ -709,9 +709,13 @@ object_ptr<TabbedSelector::InnerFooter> EmojiListWidget::createFooter() {
 	Expects(_footer == nullptr);
 
 	using FooterDescriptor = StickersListFooter::Descriptor;
+	const auto flag = powerSavingFlag();
+	const auto footerPaused = [method = pausedMethod(), flag]() {
+		return On(flag) || method();
+	};
 	auto result = object_ptr<StickersListFooter>(FooterDescriptor{
 		.session = &session(),
-		.paused = pausedMethod(),
+		.paused = footerPaused,
 		.parent = this,
 		.st = &st(),
 	});
@@ -1006,7 +1010,7 @@ void EmojiListWidget::validateEmojiPaintContext(
 		.size = QSize(_customSingleSize, _customSingleSize),
 		.now = crl::now(),
 		.scale = context.progress,
-		.paused = paused(),
+		.paused = On(powerSavingFlag()) || paused(),
 		.scaled = context.expanding,
 	};
 	if (!_emojiPaintContext) {
@@ -1414,26 +1418,27 @@ void EmojiListWidget::mouseReleaseEvent(QMouseEvent *e) {
 		Assert(button->section >= _staticCount
 			&& button->section < _staticCount + _custom.size());
 		const auto id = _custom[button->section - _staticCount].id;
+		const auto usage = ChatHelpers::WindowUsage::PremiumPromo;
 		if (hasRemoveButton(button->section)) {
 			removeSet(id);
 		} else if (hasAddButton(button->section)) {
 			_localSetsManager->install(id);
-		} else if (_controller) {
+		} else if (const auto resolved = _show->resolveWindow(usage)) {
 			_jumpedToPremium.fire({});
 			switch (_mode) {
 			case Mode::Full:
 			case Mode::UserpicBuilder:
-				Settings::ShowPremium(_controller, u"animated_emoji"_q);
+				Settings::ShowPremium(resolved, u"animated_emoji"_q);
 				break;
 			case Mode::FullReactions:
 			case Mode::RecentReactions:
-				Settings::ShowPremium(_controller, u"infinite_reactions"_q);
+				Settings::ShowPremium(resolved, u"infinite_reactions"_q);
 				break;
 			case Mode::EmojiStatus:
-				Settings::ShowPremium(_controller, u"emoji_status"_q);
+				Settings::ShowPremium(resolved, u"emoji_status"_q);
 				break;
 			case Mode::TopicIcon:
-				Settings::ShowPremium(_controller, u"forum_topic_icon"_q);
+				Settings::ShowPremium(resolved, u"forum_topic_icon"_q);
 				break;
 			}
 		}
@@ -1443,20 +1448,14 @@ void EmojiListWidget::mouseReleaseEvent(QMouseEvent *e) {
 void EmojiListWidget::displaySet(uint64 setId) {
 	const auto &sets = session().data().stickers().sets();
 	auto it = sets.find(setId);
-	if (it != sets.cend() && _controller) {
-		checkHideWithBox(_controller->show(
-			Box<StickerSetBox>(_controller, it->second.get()),
-			Ui::LayerOption::KeepOther).data());
+	if (it != sets.cend()) {
+		checkHideWithBox(Box<StickerSetBox>(_show, it->second.get()));
 	}
 }
 
 void EmojiListWidget::removeSet(uint64 setId) {
 	if (auto box = MakeConfirmRemoveSetBox(&session(), setId)) {
-		if (_controller) {
-			checkHideWithBox(_controller->show(
-				std::move(box),
-				Ui::LayerOption::KeepOther));
-		}
+		checkHideWithBox(std::move(box));
 	}
 }
 
@@ -2177,6 +2176,14 @@ QPoint EmojiListWidget::buttonRippleTopLeft(int section) const {
 		+ (hasRemoveButton(section)
 			? st::stickerPanRemoveSet.rippleAreaPosition
 			: QPoint());
+}
+
+PowerSaving::Flag EmojiListWidget::powerSavingFlag() const {
+	const auto reactions = (_mode == Mode::FullReactions)
+		|| (_mode == Mode::RecentReactions);
+	return reactions
+		? PowerSaving::kEmojiReactions
+		: PowerSaving::kEmojiPanel;
 }
 
 void EmojiListWidget::refreshEmoji() {

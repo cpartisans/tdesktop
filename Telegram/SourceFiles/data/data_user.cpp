@@ -16,6 +16,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/data_photo.h"
 #include "data/data_emoji_statuses.h"
 #include "data/data_user_names.h"
+#include "data/data_wall_paper.h"
 #include "data/notify/data_notify_settings.h"
 #include "api/api_peer_photo.h"
 #include "apiwrap.h"
@@ -32,8 +33,7 @@ using UpdateFlag = Data::PeerUpdate::Flag;
 
 } // namespace
 
-BotInfo::BotInfo() : text(st::msgMinWidth) {
-}
+BotInfo::BotInfo() = default;
 
 UserData::UserData(not_null<Data::Session*> owner, PeerId id)
 : PeerData(owner, id)
@@ -188,10 +188,30 @@ void UserData::setBotInfo(const MTPBotInfo &info) {
 			return;
 		}
 
-		QString desc = qs(d.vdescription().value_or_empty());
-		if (botInfo->description != desc) {
-			botInfo->description = desc;
-			botInfo->text = Ui::Text::String(st::msgMinWidth);
+		const auto description = qs(d.vdescription().value_or_empty());
+		if (botInfo->description != description) {
+			botInfo->description = description;
+			++botInfo->descriptionVersion;
+		}
+		if (const auto photo = d.vdescription_photo()) {
+			const auto parsed = owner().processPhoto(*photo);
+			if (botInfo->photo != parsed) {
+				botInfo->photo = parsed;
+				++botInfo->descriptionVersion;
+			}
+		} else if (botInfo->photo) {
+			botInfo->photo = nullptr;
+			++botInfo->descriptionVersion;
+		}
+		if (const auto document = d.vdescription_document()) {
+			const auto parsed = owner().processDocument(*document);
+			if (botInfo->document != parsed) {
+				botInfo->document = parsed;
+				++botInfo->descriptionVersion;
+			}
+		} else if (botInfo->document) {
+			botInfo->document = nullptr;
+			++botInfo->descriptionVersion;
 		}
 
 		auto commands = d.vcommands()
@@ -441,6 +461,13 @@ void ApplyUserUpdate(not_null<UserData*> user, const MTPDuserFull &update) {
 				user,
 				Data::PeerUpdate::Flag::Rights);
 		}
+	}
+
+	if (const auto paper = update.vwallpaper()) {
+		user->setWallPaper(
+			Data::WallPaper::Create(&user->session(), *paper));
+	} else {
+		user->setWallPaper({});
 	}
 
 	user->fullUpdated();

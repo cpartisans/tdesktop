@@ -10,6 +10,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "api/api_authorizations.h"
 #include "api/api_confirm_phone.h"
 #include "api/api_text_entities.h"
+#include "api/api_chat_filters.h"
 #include "api/api_chat_invite.h"
 #include "base/qthelp_regex.h"
 #include "base/qthelp_url.h"
@@ -25,7 +26,6 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "boxes/sticker_set_box.h"
 #include "boxes/sessions_box.h"
 #include "boxes/language_box.h"
-#include "boxes/change_phone_box.h"
 #include "passport/passport_form_controller.h"
 #include "window/window_session_controller.h"
 #include "ui/toast/toast.h"
@@ -78,6 +78,18 @@ bool JoinGroupByHash(
 	return true;
 }
 
+bool JoinFilterBySlug(
+		Window::SessionController *controller,
+		const Match &match,
+		const QVariant &context) {
+	if (!controller) {
+		return false;
+	}
+	Api::CheckFilterInvite(controller, match->captured(1));
+	controller->window().activate();
+	return true;
+}
+
 bool ShowStickerSet(
 		Window::SessionController *controller,
 		const Match &match,
@@ -87,7 +99,7 @@ bool ShowStickerSet(
 	}
 	Core::App().hideMediaView();
 	controller->show(Box<StickerSetBox>(
-		controller,
+		controller->uiShow(),
 		StickerSetIdentifier{ .shortName = match->captured(2) },
 		(match->captured(1) == "addemoji"
 			? Data::StickersType::Emoji
@@ -243,14 +255,12 @@ bool ShowPassportForm(
 	const auto nonce = params.value(
 		Passport::NonceNameByScope(scope),
 		QString());
-	const auto errors = params.value("errors", QString());
 	controller->showPassportForm(Passport::FormRequest(
 		botId,
 		scope,
 		callback,
 		publicKey,
-		nonce,
-		errors));
+		nonce));
 	return true;
 }
 
@@ -373,6 +383,8 @@ bool ResolveUsernameOrPhone(
 	if (const auto postId = postParam.toInt()) {
 		post = postId;
 	}
+	const auto appname = params.value(u"appname"_q);
+	const auto appstart = params.value(u"startapp"_q);
 	const auto commentParam = params.value(u"comment"_q);
 	const auto commentId = commentParam.toInt();
 	const auto topicParam = params.value(u"topic"_q);
@@ -383,6 +395,12 @@ bool ResolveUsernameOrPhone(
 	if (!gameParam.isEmpty() && validDomain(gameParam)) {
 		startToken = gameParam;
 		resolveType = ResolveType::ShareGame;
+	}
+	if (startToken.isEmpty() && params.contains(u"startapp"_q)) {
+		startToken = params.value(u"startapp"_q);
+	}
+	if (!appname.isEmpty()) {
+		resolveType = ResolveType::BotApp;
 	}
 	const auto myContext = context.value<ClickHandlerContext>();
 	using Navigation = Window::SessionNavigation;
@@ -403,6 +421,8 @@ bool ResolveUsernameOrPhone(
 		.startToken = startToken,
 		.startAdminRights = adminRights,
 		.startAutoSubmit = myContext.botStartAutoSubmit,
+		.botAppName = appname.isEmpty() ? postParam : appname,
+		.botAppForceConfirmation = myContext.mayShowConfirmation,
 		.attachBotUsername = params.value(u"attach"_q),
 		.attachBotToggleCommand = (params.contains(u"startattach"_q)
 			? params.value(u"startattach"_q)
@@ -482,7 +502,9 @@ bool ResolveSettings(
 		} else if (section == u"themes"_q) {
 			return ::Settings::Chat::Id();
 		} else if (section == u"change_number"_q) {
-			return ::Settings::ChangePhone::Id();
+			controller->show(
+				Ui::MakeInformBox(tr::lng_change_phone_error()));
+			return {};
 		} else if (section == u"auto_delete"_q) {
 			return ::Settings::GlobalTTLId();
 		} else if (section == u"information"_q) {
@@ -586,9 +608,7 @@ bool ShowInviteLink(
 		return false;
 	}
 	QGuiApplication::clipboard()->setText(link);
-	Ui::Toast::Show(
-		Window::Show(controller).toastParent(),
-		tr::lng_group_invite_copied(tr::now));
+	controller->showToast(tr::lng_group_invite_copied(tr::now));
 	return true;
 }
 
@@ -605,12 +625,12 @@ void ExportTestChatTheme(
 		not_null<Window::SessionController*> controller,
 		not_null<const Data::CloudTheme*> theme) {
 	const auto session = &controller->session();
-	const auto show = std::make_shared<Window::Show>(controller);
+	const auto show = controller->uiShow();
 	const auto inputSettings = [&](Data::CloudThemeType type)
 	-> std::optional<MTPInputThemeSettings> {
 		const auto i = theme->settings.find(type);
 		if (i == end(theme->settings)) {
-			Ui::Toast::Show(show->toastParent(), "Something went wrong :(");
+			show->showToast(u"Something went wrong :("_q);
 			return std::nullopt;
 		}
 		const auto &fields = i->second;
@@ -618,17 +638,15 @@ void ExportTestChatTheme(
 			|| !fields.paper->isPattern()
 			|| fields.paper->backgroundColors().empty()
 			|| !fields.paper->hasShareUrl()) {
-			Ui::Toast::Show(show->toastParent(), "Something went wrong :(");
+			show->showToast(u"Something went wrong :("_q);
 			return std::nullopt;
 		}
 		const auto &bg = fields.paper->backgroundColors();
-		const auto url = fields.paper->shareUrl(session);
+		const auto url = fields.paper->shareUrl(&show->session());
 		const auto from = url.indexOf("bg/");
 		const auto till = url.indexOf("?");
 		if (from < 0 || till <= from) {
-			Ui::Toast::Show(
-				show->toastParent(),
-				"Bad WallPaper link: " + url);
+			show->showToast(u"Bad WallPaper link: "_q + url);
 			return std::nullopt;
 		}
 
@@ -710,15 +728,9 @@ void ExportTestChatTheme(
 		const auto slug = Data::CloudTheme::Parse(session, result, true).slug;
 		QGuiApplication::clipboard()->setText(
 			session->createInternalLinkFull("addtheme/" + slug));
-		if (show->valid()) {
-			Ui::Toast::Show(
-				show->toastParent(),
-				tr::lng_background_link_copied(tr::now));
-		}
+		show->showToast(tr::lng_background_link_copied(tr::now));
 	}).fail([=](const MTP::Error &error) {
-		if (show->valid()) {
-			Ui::Toast::Show(show->toastParent(), "Error: " + error.type());
-		}
+		show->showToast(u"Error: "_q + error.type());
 	}).send();
 }
 
@@ -743,7 +755,10 @@ bool ResolveTestChatTheme(
 			}
 			const auto recache = [&](Data::CloudThemeType type) {
 				[[maybe_unused]] auto value = theme->settings.contains(type)
-					? controller->cachedChatThemeValue(*theme, type)
+					? controller->cachedChatThemeValue(
+						*theme,
+						Data::WallPaper(0),
+						type)
 					: nullptr;
 			};
 			recache(Data::CloudThemeType::Dark);
@@ -820,6 +835,10 @@ const std::vector<LocalUrlHandler> &LocalUrlHandlers() {
 		{
 			u"^join/?\\?invite=([a-zA-Z0-9\\.\\_\\-]+)(&|$)"_q,
 			JoinGroupByHash
+		},
+		{
+			u"^addlist/?\\?slug=([a-zA-Z0-9\\.\\_\\-]+)(&|$)"_q,
+			JoinFilterBySlug
 		},
 		{
 			u"^(addstickers|addemoji)/?\\?set=([a-zA-Z0-9\\.\\_]+)(&|$)"_q,
@@ -945,6 +964,8 @@ QString TryConvertUrlToLocal(QString url) {
 			return u"tg://resolve?phone="_q + phoneMatch->captured(1) + (params.isEmpty() ? QString() : '&' + params);
 		} else if (const auto joinChatMatch = regex_match(u"^(joinchat/|\\+|\\%20)([a-zA-Z0-9\\.\\_\\-]+)(\\?|$)"_q, query, matchOptions)) {
 			return u"tg://join?invite="_q + url_encode(joinChatMatch->captured(2));
+		} else if (const auto joinFilterMatch = regex_match(u"^(addlist/)([a-zA-Z0-9\\.\\_\\-]+)(\\?|$)"_q, query, matchOptions)) {
+			return u"tg://addlist?slug="_q + url_encode(joinFilterMatch->captured(2));
 		} else if (const auto stickerSetMatch = regex_match(u"^(addstickers|addemoji)/([a-zA-Z0-9\\.\\_]+)(\\?|$)"_q, query, matchOptions)) {
 			return u"tg://"_q + stickerSetMatch->captured(1) + "?set=" + url_encode(stickerSetMatch->captured(2));
 		} else if (const auto themeMatch = regex_match(u"^addtheme/([a-zA-Z0-9\\.\\_]+)(\\?|$)"_q, query, matchOptions)) {
@@ -1004,6 +1025,7 @@ QString TryConvertUrlToLocal(QString url) {
 			"("
 				"/?\\?|"
 				"/?$|"
+				"/[a-zA-Z0-9\\.\\_]+/?(\\?|$)|"
 				"/\\d+/?(\\?|$)|"
 				"/\\d+/\\d+/?(\\?|$)"
 			")"_q, query, matchOptions)) {
@@ -1014,6 +1036,8 @@ QString TryConvertUrlToLocal(QString url) {
 				added = u"&topic=%1&post=%2"_q.arg(threadPostMatch->captured(1)).arg(threadPostMatch->captured(2));
 			} else if (const auto postMatch = regex_match(u"^/(\\d+)(/?\\?|/?$)"_q, usernameMatch->captured(2))) {
 				added = u"&post="_q + postMatch->captured(1);
+			} else if (const auto appNameMatch = regex_match(u"^/([a-zA-Z0-9\\.\\_]+)(/?\\?|/?$)"_q, usernameMatch->captured(2))) {
+				added = u"&appname="_q + appNameMatch->captured(1);
 			}
 			return base + added + (params.isEmpty() ? QString() : '&' + params);
 		}

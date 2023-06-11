@@ -24,6 +24,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/chat/chat_style.h"
 #include "ui/effects/reaction_fly_animation.h"
 #include "ui/painter.h"
+#include "ui/power_saving.h"
 #include "styles/style_chat.h"
 
 namespace HistoryView::Reactions {
@@ -323,6 +324,7 @@ void InlineList::paint(
 		const QRect &clip) const {
 	struct SingleAnimation {
 		not_null<Ui::ReactionFlyAnimation*> animation;
+		QColor textColor;
 		QRect target;
 	};
 	std::vector<SingleAnimation> animations;
@@ -395,6 +397,7 @@ void InlineList::paint(
 				button.id,
 				::Data::Reactions::ImageSize::InlineList);
 		}
+
 		const auto textFg = !inbubble
 			? (chosen
 				? QPen(AdaptChosenServiceFg(st->msgServiceBg()->c))
@@ -417,7 +420,7 @@ void InlineList::paint(
 					p,
 					custom,
 					inner.topLeft(),
-					context.now,
+					context,
 					textFg.color());
 			} else if (!button.image.isNull()) {
 				p.drawImage(image.topLeft(), button.image);
@@ -426,6 +429,7 @@ void InlineList::paint(
 		if (animating) {
 			animations.push_back({
 				.animation = button.animation.get(),
+				.textColor = textFg.color(),
 				.target = image,
 			});
 		}
@@ -464,7 +468,7 @@ void InlineList::paint(
 					p,
 					QPoint(),
 					single.target,
-					QColor(255, 255, 255, 0), // Colored, for emoji status.
+					single.textColor,
 					QRect(), // Clip, for emoji status.
 					now);
 				result = result.isEmpty() ? area : result.united(area);
@@ -546,7 +550,7 @@ void InlineList::paintCustomFrame(
 		Painter &p,
 		not_null<Ui::Text::CustomEmoji*> emoji,
 		QPoint innerTopLeft,
-		crl::time now,
+		const PaintContext &context,
 		const QColor &textColor) const {
 	if (_customCache.isNull()) {
 		using namespace Ui::Text;
@@ -563,8 +567,8 @@ void InlineList::paintCustomFrame(
 	auto q = QPainter(&_customCache);
 	emoji->paint(q, {
 		.textColor = textColor,
-		.now = now,
-		.paused = p.inactive(),
+		.now = context.now,
+		.paused = context.paused || On(PowerSaving::kEmojiChat),
 	});
 	q.end();
 	_customCache = Images::Round(

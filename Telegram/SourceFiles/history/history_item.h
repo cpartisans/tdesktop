@@ -306,6 +306,9 @@ public:
 	[[nodiscard]] bool isLocal() const {
 		return _flags & MessageFlag::Local;
 	}
+	[[nodiscard]] bool isFakeBotAbout() const {
+		return _flags & MessageFlag::FakeBotAbout;
+	}
 	[[nodiscard]] bool isRegular() const;
 	[[nodiscard]] bool isUploading() const;
 	void sendFailed();
@@ -352,8 +355,15 @@ public:
 	void indexAsNewItem();
 	void removeFromSharedMediaIndex();
 
+	struct NotificationTextOptions {
+		bool spoilerLoginCode = false;
+	};
 	[[nodiscard]] QString notificationHeader() const;
-	[[nodiscard]] TextWithEntities notificationText() const;
+	[[nodiscard]] TextWithEntities notificationText(
+		NotificationTextOptions options) const;
+	[[nodiscard]] TextWithEntities notificationText() const {
+		return notificationText({});
+	}
 
 	using ToPreviewOptions = HistoryView::ToPreviewOptions;
 	using ItemPreview = HistoryView::ItemPreview;
@@ -430,6 +440,7 @@ public:
 	[[nodiscard]] crl::time lastReactionsRefreshTime() const;
 
 	[[nodiscard]] bool hasDirectLink() const;
+	[[nodiscard]] bool changesWallPaper() const;
 
 	[[nodiscard]] FullMsgId fullId() const;
 	[[nodiscard]] GlobalMsgId globalId() const;

@@ -1059,7 +1059,16 @@ ServiceAction ParseServiceAction(
 		result.content = content;
 	}, [&](const MTPDmessageActionBotAllowed &data) {
 		auto content = ActionBotAllowed();
-		content.domain = ParseString(data.vdomain());
+		if (const auto app = data.vapp()) {
+			app->match([&](const MTPDbotApp &data) {
+				content.appId = data.vid().v;
+				content.app = ParseString(data.vtitle());
+			}, [](const MTPDbotAppNotModified &) {});
+		}
+		if (const auto domain = data.vdomain()) {
+			content.domain = ParseString(*domain);
+		}
+		content.attachMenu = data.is_attach_menu();
 		result.content = content;
 	}, [&](const MTPDmessageActionSecureValuesSentMe &data) {
 		// Should not be in user inbox.
@@ -1173,8 +1182,12 @@ ServiceAction ParseServiceAction(
 			+ "photos/"
 			+ PreparePhotoFileName(++context.photos, date));
 		result.content = content;
-	}, [&](const MTPDmessageActionAttachMenuBotAllowed &data) {
-		result.content = ActionAttachMenuBotAllowed();
+	}, [&](const MTPDmessageActionSetChatWallPaper &data) {
+		auto content = ActionSetChatWallPaper();
+		// #TODO wallpapers
+		result.content = content;
+	}, [&](const MTPDmessageActionSetSameChatWallPaper &data) {
+		result.content = ActionSetSameChatWallPaper();
 	}, [&](const MTPDmessageActionRequestedPeer &data) {
 		auto content = ActionRequestedPeer();
 		content.peerId = ParsePeerId(data.vpeer());
@@ -1191,6 +1204,9 @@ File &Message::file() {
 	} else if (const auto photo = std::get_if<ActionSuggestProfilePhoto>(
 			content)) {
 		return photo->photo.image.file;
+	} else if (const auto wallpaper = std::get_if<ActionSetChatWallPaper>(
+			content)) {
+		// #TODO wallpapers
 	}
 	return media.file();
 }
@@ -1202,6 +1218,9 @@ const File &Message::file() const {
 	} else if (const auto photo = std::get_if<ActionSuggestProfilePhoto>(
 			content)) {
 		return photo->photo.image.file;
+	} else if (const auto wallpaper = std::get_if<ActionSetChatWallPaper>(
+			content)) {
+		// #TODO wallpapers
 	}
 	return media.file();
 }

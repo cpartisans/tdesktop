@@ -431,7 +431,10 @@ struct ActionCustomAction {
 };
 
 struct ActionBotAllowed {
+	uint64 appId = 0;
+	Utf8String app;
 	Utf8String domain;
+	bool attachMenu = false;
 };
 
 struct ActionSecureValuesSent {
@@ -512,7 +515,11 @@ struct ActionSuggestProfilePhoto {
 	Photo photo;
 };
 
-struct ActionAttachMenuBotAllowed {
+struct ActionSetChatWallPaper {
+	// #TODO wallpapers
+};
+
+struct ActionSetSameChatWallPaper {
 };
 
 struct ActionRequestedPeer {
@@ -556,8 +563,9 @@ struct ServiceAction {
 		ActionTopicCreate,
 		ActionTopicEdit,
 		ActionSuggestProfilePhoto,
-		ActionAttachMenuBotAllowed,
-		ActionRequestedPeer> content;
+		ActionRequestedPeer,
+		ActionSetChatWallPaper,
+		ActionSetSameChatWallPaper> content;
 };
 
 ServiceAction ParseServiceAction(

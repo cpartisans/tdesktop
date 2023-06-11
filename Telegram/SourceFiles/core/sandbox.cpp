@@ -122,6 +122,11 @@ int Sandbox::start() {
 		}
 	}
 
+#if defined Q_OS_LINUX && QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
+	_localServer.setSocketOptions(QLocalServer::AbstractNamespaceOption);
+	_localSocket.setSocketOptions(QLocalSocket::AbstractNamespaceOption);
+#endif // Q_OS_LINUX && Qt >= 6.2.0
+
 	connect(
 		&_localSocket,
 		&QLocalSocket::connected,
@@ -246,11 +251,10 @@ void Sandbox::setupScreenScale() {
 		// 110% for Retina screens by default.
 		cSetScreenScale((useRatio == 2) ? 110 : style::kScaleDefault);
 	} else {
-		const auto clamped = std::clamp(
-			screenScale * useRatio,
-			style::kScaleMin * useRatio,
-			style::kScaleMax);
-		cSetScreenScale(int(base::SafeRound(clamped * 1. / useRatio)));
+		cSetScreenScale(std::clamp(
+			screenScale,
+			style::kScaleMin,
+			style::MaxScaleForRatio(useRatio)));
 	}
 	LOG(("DevicePixelRatio: %1").arg(useRatio));
 	LOG(("ScreenScale: %1").arg(cScreenScale()));

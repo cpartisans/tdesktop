@@ -24,6 +24,10 @@ namespace Data {
 class StickersSet;
 } // namespace Data
 
+namespace PowerSaving {
+enum Flag : uint32;
+} // namespace PowerSaving
+
 namespace tr {
 template <typename ...Tags>
 struct phrase;
@@ -72,9 +76,8 @@ enum class EmojiListMode {
 };
 
 struct EmojiListDescriptor {
-	not_null<Main::Session*> session;
+	std::shared_ptr<Show> show;
 	EmojiListMode mode = EmojiListMode::Full;
-	Window::SessionController *controller = nullptr;
 	Fn<bool()> paused;
 	std::vector<DocumentId> customRecentList;
 	Fn<std::unique_ptr<Ui::Text::CustomEmoji>(
@@ -83,7 +86,7 @@ struct EmojiListDescriptor {
 	const style::EmojiPan *st = nullptr;
 };
 
-class EmojiListWidget
+class EmojiListWidget final
 	: public TabbedSelector::Inner
 	, public Ui::AbstractTooltipShower {
 public:
@@ -92,7 +95,7 @@ public:
 	EmojiListWidget(
 		QWidget *parent,
 		not_null<Window::SessionController*> controller,
-		Window::GifPauseReason level,
+		PauseReason level,
 		Mode mode);
 	EmojiListWidget(QWidget *parent, EmojiListDescriptor &&descriptor);
 	~EmojiListWidget();
@@ -322,6 +325,7 @@ private:
 	[[nodiscard]] std::unique_ptr<Ui::RippleAnimation> createButtonRipple(
 		int section);
 	[[nodiscard]] QPoint buttonRippleTopLeft(int section) const;
+	[[nodiscard]] PowerSaving::Flag powerSavingFlag() const;
 
 	void repaintCustom(uint64 setId);
 
@@ -340,7 +344,7 @@ private:
 
 	void applyNextSearchQuery();
 
-	Window::SessionController *_controller = nullptr;
+	const std::shared_ptr<Show> _show;
 	Mode _mode = Mode::Full;
 	std::unique_ptr<Ui::TabbedSearch> _search;
 	const int _staticCount = 0;

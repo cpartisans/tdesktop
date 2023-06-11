@@ -1,11 +1,11 @@
 {%- set GIT = "https://github.com" -%}
 {%- set GIT_FREEDESKTOP = GIT ~ "/gitlab-freedesktop-mirrors" -%}
-{%- set QT = "6_4_2" -%}
-{%- set QT_TAG = "v6.4.2" -%}
-{%- set QT_PREFIX = "/usr/local/desktop-app/Qt-6.4.2" -%}
+{%- set QT = "6.5.1" -%}
+{%- set QT_TAG = "v" ~ QT -%}
+{%- set QT_PREFIX = "/usr/local/desktop-app/Qt-" ~ QT -%}
 {%- set OPENSSL_VER = "1_1_1" -%}
 {%- set OPENSSL_PREFIX = "/usr/local/desktop-app/openssl-1.1.1" -%}
-{%- set CMAKE_VER = "3.24.3" -%}
+{%- set CMAKE_VER = "3.26.3" -%}
 {%- set CMAKE_FILE = "cmake-" ~ CMAKE_VER ~ "-Linux-x86_64.sh" -%}
 {%- set CFLAGS_DEBUG = "-g -pipe -fPIC -fstack-protector-all -fstack-clash-protection -D_GLIBCXX_ASSERTIONS" -%}
 {%- set CFLAGS_LTO = "-flto=auto -ffat-lto-objects" -%}
@@ -14,6 +14,7 @@
 # syntax=docker/dockerfile:1
 
 FROM centos:7 AS builder-base
+ENV LANG en_US.UTF-8
 ENV LIBRARY_PATH /usr/local/lib64:/usr/local/lib:/lib64:/lib:/usr/lib64:/usr/lib
 ENV LD_LIBRARY_PATH $LIBRARY_PATH
 ENV PKG_CONFIG_PATH /usr/local/lib64/pkgconfig:/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig
@@ -21,11 +22,12 @@ ENV PKG_CONFIG_PATH /usr/local/lib64/pkgconfig:/usr/local/lib/pkgconfig:/usr/loc
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
 	&& yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm \
 	&& yum -y install centos-release-scl \
-	&& yum -y install git rh-python38-python-pip autoconf automake libtool patch \
+	&& yum -y install git rh-python38-python-pip rh-python38-python-devel \
+		autoconf automake libtool patch gperf flex \
 		fontconfig-devel freetype-devel libX11-devel at-spi2-core-devel alsa-lib-devel \
 		pulseaudio-libs-devel mesa-libGL-devel mesa-libEGL-devel mesa-libgbm-devel \
-		libdrm-devel vulkan-devel gtk3-devel \
-		perl-XML-Parser pkgconfig bison yasm file which xorg-x11-util-macros \
+		libdrm-devel vulkan-devel boost169-devel fmt-devel \
+		gtk3-devel perl-XML-Parser pkgconfig bison yasm file which xorg-x11-util-macros \
 		devtoolset-10-make devtoolset-10-gcc devtoolset-10-gcc-c++ \
 		devtoolset-10-binutils llvm-toolset-7.0 llvm-toolset-7.0-clang-devel \
 		llvm-toolset-7.0-llvm-devel \
@@ -50,13 +52,13 @@ FROM builder-base AS builder
 ENV AR gcc-ar
 ENV RANLIB gcc-ranlib
 ENV NM gcc-nm
-ENV CFLAGS {% if DEBUG %}-g{% endif %} -Ofast {% if LTO %}{{ CFLAGS_LTO }}{% endif %} -pipe -fPIC -fstack-protector-all -fstack-clash-protection -DNDEBUG -D_FORTIFY_SOURCE=2 -D_GLIBCXX_ASSERTIONS
+ENV CFLAGS {% if DEBUG %}-g{% endif %} -O3 {% if LTO %}{{ CFLAGS_LTO }}{% endif %} -pipe -fPIC -fstack-protector-all -fstack-clash-protection -DNDEBUG -D_FORTIFY_SOURCE=2 -D_GLIBCXX_ASSERTIONS
 ENV CXXFLAGS $CFLAGS
 
 FROM builder AS patches
 RUN git clone {{ GIT }}/desktop-app/patches.git \
 	&& cd patches \
-	&& git checkout 9aa30bc442 \
+	&& git checkout 1d72fdb335 \
 	&& rm -rf .git
 
 FROM builder AS nasm
@@ -186,7 +188,7 @@ FROM builder AS opus
 RUN git clone -b v1.3.1 --depth=1 {{ GIT }}/xiph/opus.git \
 	&& cd opus \
 	&& ./autogen.sh \
-	&& ./configure --enable-float-approx \
+	&& ./configure \
 	&& make -j$(nproc) \
 	&& make DESTDIR="{{ LibrariesPath }}/opus-cache" install \
 	&& cd .. \
@@ -303,10 +305,7 @@ RUN git clone -b v0.8.1 --depth=1 {{ GIT }}/libjxl/libjxl.git \
 FROM builder AS rnnoise
 RUN git clone -b master --depth=1 {{ GIT }}/desktop-app/rnnoise \
 	&& cd rnnoise \
-	&& cmake -GNinja -B build . \
-		-DCMAKE_BUILD_TYPE=None \
-		-DCMAKE_C_FLAGS="$CFLAGS -DFLOAT_APPROX" \
-		-DCMAKE_CXX_FLAGS="$CXXFLAGS -DFLOAT_APPROX" \
+	&& cmake -GNinja -B build . -DCMAKE_BUILD_TYPE=None \
 	&& cmake --build build --parallel \
 	&& mkdir -p "{{ LibrariesPath }}/rnnoise-cache/usr/local/include" \
 	&& cp "include/rnnoise.h" "{{ LibrariesPath }}/rnnoise-cache/usr/local/include/" \
@@ -381,6 +380,19 @@ RUN git clone -b 0.3.9 --depth=1 --recursive {{ GIT_FREEDESKTOP }}/libxcb-render
 	&& make DESTDIR="{{ LibrariesPath }}/xcb-render-util-cache" install \
 	&& cd .. \
 	&& rm -rf libxcb-render-util
+
+FROM builder AS xcb-cursor
+COPY --link --from=xcb-util {{ LibrariesPath }}/xcb-util-cache /
+COPY --link --from=xcb-image {{ LibrariesPath }}/xcb-image-cache /
+COPY --link --from=xcb-render-util {{ LibrariesPath }}/xcb-render-util-cache /
+
+RUN git clone -b xcb-util-cursor-0.1.4 --depth=1 --recursive {{ GIT_FREEDESKTOP }}/libxcb-cursor.git \
+	&& cd libxcb-cursor \
+	&& ./autogen.sh --enable-static \
+	&& make -j$(nproc) \
+	&& make DESTDIR="{{ LibrariesPath }}/xcb-cursor-cache" install \
+	&& cd .. \
+	&& rm -rf libxcb-cursor
 
 FROM builder AS libXext
 RUN git clone -b libXext-1.3.4 --depth=1 {{ GIT_FREEDESKTOP }}/libxext.git \
@@ -476,7 +488,7 @@ COPY --link --from=nv-codec-headers {{ LibrariesPath }}/nv-codec-headers-cache /
 RUN git init ffmpeg \
 	&& cd ffmpeg \
 	&& git remote add origin {{ GIT }}/FFmpeg/FFmpeg.git \
-	&& git fetch --depth=1 origin cc33e73618a981de7fd96385ecb34719de031f16 \
+	&& git fetch --depth=1 origin 7268323193d55365f914de39fadd5dbdb1f68976 \
 	&& git reset --hard FETCH_HEAD \
 	&& ./configure \
 		--extra-cflags="-DCONFIG_SAFE_BITSTREAM_READER=1" \
@@ -571,6 +583,7 @@ RUN git init ffmpeg \
 		--enable-decoder=wmav2 \
 		--enable-decoder=wmavoice \
 		--enable-encoder=libopus \
+		--enable-filter=atempo \
 		--enable-parser=aac \
 		--enable-parser=aac_latm \
 		--enable-parser=flac \
@@ -614,7 +627,7 @@ RUN git clone -b 0.3.25 --depth=1 {{ GIT }}/PipeWire/pipewire.git \
 FROM builder AS openal
 COPY --link --from=pipewire {{ LibrariesPath }}/pipewire-cache /
 
-RUN git clone -b 1.22.2 --depth=1 {{ GIT }}/kcat/openal-soft.git \
+RUN git clone -b 1.23.0 --depth=1 {{ GIT }}/kcat/openal-soft.git \
 	&& cd openal-soft \
 	&& cmake -GNinja -B build . \
 		-DCMAKE_BUILD_TYPE=None \
@@ -663,7 +676,7 @@ RUN git clone -b xkbcommon-1.3.1 --depth=1 {{ GIT }}/xkbcommon/libxkbcommon.git 
 FROM patches AS glibmm
 COPY --link --from=libffi {{ LibrariesPath }}/libffi-cache /
 
-RUN git clone -b 2.74.0 --depth=1 {{ GIT }}/GNOME/glibmm.git \
+RUN git clone -b 2.76.0 --depth=1 {{ GIT }}/GNOME/glibmm.git \
 	&& cd glibmm \
 	&& git apply ../patches/glibmm.patch \
 	&& CFLAGS="$CFLAGS {{ CFLAGS_LTO }}" CXXFLAGS="$CXXFLAGS {{ CFLAGS_LTO }}" meson build \
@@ -681,6 +694,18 @@ RUN git clone -b 2.74.0 --depth=1 {{ GIT }}/GNOME/glibmm.git \
 	&& cd .. \
 	&& rm -rf glibmm
 
+FROM builder AS gobject-introspection
+COPY --link --from=libffi {{ LibrariesPath }}/libffi-cache /
+COPY --link --from=glibmm {{ LibrariesPath }}/glibmm-cache /
+
+RUN git clone -b 1.76.1 --depth=1 {{ GIT }}/GNOME/gobject-introspection.git \
+	&& cd gobject-introspection \
+	&& meson build --buildtype=plain \
+	&& meson compile -C build \
+	&& DESTDIR="{{ LibrariesPath }}/gobject-introspection-cache" meson install -C build \
+	&& cd .. \
+	&& rm -rf gobject-introspection
+
 FROM patches AS qt
 COPY --link --from=libffi {{ LibrariesPath }}/libffi-cache /
 COPY --link --from=zlib {{ LibrariesPath }}/zlib-cache /
@@ -693,20 +718,21 @@ COPY --link --from=xcb-util {{ LibrariesPath }}/xcb-util-cache /
 COPY --link --from=xcb-image {{ LibrariesPath }}/xcb-image-cache /
 COPY --link --from=xcb-keysyms {{ LibrariesPath }}/xcb-keysyms-cache /
 COPY --link --from=xcb-render-util {{ LibrariesPath }}/xcb-render-util-cache /
+COPY --link --from=xcb-cursor {{ LibrariesPath }}/xcb-cursor-cache /
 COPY --link --from=wayland {{ LibrariesPath }}/wayland-cache /
 COPY --link --from=openssl {{ LibrariesPath }}/openssl-cache /
 COPY --link --from=xkbcommon {{ LibrariesPath }}/xkbcommon-cache /
 
 ENV OPENSSL_ROOT_DIR {{ OPENSSL_PREFIX }}
 
-RUN git clone -b {{ QT_TAG }} --depth=1 git://code.qt.io/qt/qt5.git qt_{{ QT }} \
+RUN git clone -b {{ QT_TAG }} --depth=1 https://code.qt.io/qt/qt5.git qt_{{ QT }} \
 	&& cd qt_{{ QT }} \
-	&& git submodule update --init --recursive --depth=1 qtbase qtdeclarative qtwayland qtimageformats qtsvg qt5compat qtshadertools \
+	&& git submodule update --init --recursive --depth=1 qtbase qtdeclarative qtwayland qtimageformats qtsvg qtshadertools \
 	&& cd qtbase \
 	&& find ../../patches/qtbase_{{ QT }} -type f -print0 | sort -z | xargs -r0 git apply \
 	&& cd ../qtdeclarative \
-	&& sed -i '/add_subdirectory(quickcontrols2)/d' src/CMakeLists.txt \
-	&& sed -i '/add_subdirectory(quickdialogs2)/d' src/CMakeLists.txt \
+	&& sed -i '/add_subdirectory(quickcontrols)/d' src/CMakeLists.txt \
+	&& sed -i '/add_subdirectory(quickdialogs)/d' src/CMakeLists.txt \
 	&& sed -i '/add_subdirectory(quicknativestyle)/d' src/CMakeLists.txt \
 	&& cd .. \
 	&& ./configure -prefix "{{ QT_PREFIX }}" \
@@ -758,7 +784,7 @@ COPY --link --from=pipewire {{ LibrariesPath }}/pipewire-cache /
 RUN git init tg_owt \
 	&& cd tg_owt \
 	&& git remote add origin {{ GIT }}/desktop-app/tg_owt.git \
-	&& git fetch --depth=1 origin 5098730b9eb6173f0b52068fe2555b7c1015123a \
+	&& git fetch --depth=1 origin dcb5069ff76bd293e86928804208737e6cee2ccc \
 	&& git reset --hard FETCH_HEAD \
 	&& git submodule update --init --recursive --depth=1 \
 	&& rm -rf .git \
@@ -811,6 +837,7 @@ COPY --link --from=xcb-util {{ LibrariesPath }}/xcb-util-cache /
 COPY --link --from=xcb-image {{ LibrariesPath }}/xcb-image-cache /
 COPY --link --from=xcb-keysyms {{ LibrariesPath }}/xcb-keysyms-cache /
 COPY --link --from=xcb-render-util {{ LibrariesPath }}/xcb-render-util-cache /
+COPY --link --from=xcb-cursor {{ LibrariesPath }}/xcb-cursor-cache /
 COPY --link --from=libXext {{ LibrariesPath }}/libXext-cache /
 COPY --link --from=libXfixes {{ LibrariesPath }}/libXfixes-cache /
 COPY --link --from=libXtst {{ LibrariesPath }}/libXtst-cache /
@@ -824,6 +851,7 @@ COPY --link --from=openal {{ LibrariesPath }}/openal-cache /
 COPY --link --from=openssl {{ LibrariesPath }}/openssl-cache /
 COPY --link --from=xkbcommon {{ LibrariesPath }}/xkbcommon-cache /
 COPY --link --from=glibmm {{ LibrariesPath }}/glibmm-cache /
+COPY --link --from=gobject-introspection {{ LibrariesPath }}/gobject-introspection-cache /
 COPY --link --from=qt {{ LibrariesPath }}/qt-cache /
 COPY --link --from=breakpad {{ LibrariesPath }}/breakpad-cache /
 COPY --link --from=webrtc {{ LibrariesPath }}/tg_owt tg_owt
@@ -834,6 +862,11 @@ COPY --link --from=webrtc_debug {{ LibrariesPath }}/tg_owt/out/Debug tg_owt/out/
 {%- endif %}
 
 WORKDIR ../tdesktop
+ENV QT {{ QT }}
+ENV OPENSSL_ROOT_DIR {{ OPENSSL_PREFIX }}
+ENV BOOST_INCLUDEDIR /usr/include/boost169
+ENV BOOST_LIBRARYDIR /usr/lib64/boost169
+
 VOLUME [ "/usr/src/tdesktop" ]
 ENTRYPOINT [ "scl", "enable", "rh-python38", "--", "scl", "enable", "llvm-toolset-7.0", "--", "scl", "enable", "devtoolset-10", "--" ]
 CMD [ "/usr/src/tdesktop/Telegram/build/docker/centos_env/build.sh" ]

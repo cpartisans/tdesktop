@@ -40,6 +40,10 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include <QtGui/QWindow>
 
+#if __has_include(<giomm.h>)
+#include <giomm.h>
+#endif // __has_include(<giomm.h>)
+
 namespace Window {
 namespace Notifications {
 namespace {
@@ -85,7 +89,13 @@ base::options::toggle OptionGNotification({
 	.name = "GNotification",
 	.description = "Force enable GLib's GNotification."
 		" When disabled, autodetect is used.",
-	.scope = base::options::linux,
+	.scope = [] {
+#if __has_include(<giomm.h>)
+		return bool(Gio::Application::get_default());
+#else // __has_include(<giomm.h>)
+		return false;
+#endif // __has_include(<giomm.h>)
+	},
 	.restartRequired = true,
 });
 
@@ -564,22 +574,28 @@ void System::showNext() {
 	}
 	const auto &settings = Core::App().settings();
 	if (alertThread) {
-		if (settings.flashBounceNotify() && !_manager->skipFlashBounce()) {
+		if (settings.flashBounceNotify()) {
 			const auto peer = alertThread->peer();
 			if (const auto window = Core::App().windowFor(peer)) {
-				if (const auto handle = window->widget()->windowHandle()) {
-					handle->alert(kSystemAlertDuration);
-					// (handle, SLOT(_q_clearAlert())); in the future.
+				if (const auto controller = window->sessionController()) {
+					_manager->maybeFlashBounce(crl::guard(controller, [=] {
+						if (const auto handle = window->widget()->windowHandle()) {
+							handle->alert(kSystemAlertDuration);
+							// (handle, SLOT(_q_clearAlert())); in the future.
+						}
+					}));
 				}
 			}
 		}
-		if (settings.soundNotify() && !_manager->skipAudio()) {
-			const auto track = lookupSound(
-				&alertThread->owner(),
-				alertThread->owner().notifySettings().sound(alertThread).id);
-			track->playOnce();
-			Media::Player::mixer()->suppressAll(track->getLengthMs());
-			Media::Player::mixer()->faderOnTimer();
+		if (settings.soundNotify()) {
+			const auto owner = &alertThread->owner();
+			const auto id = owner->notifySettings().sound(alertThread).id;
+			_manager->maybePlaySound(crl::guard(&owner->session(), [=] {
+				const auto track = lookupSound(owner, id);
+				track->playOnce();
+				Media::Player::mixer()->suppressAll(track->getLengthMs());
+				Media::Player::mixer()->scheduleFaderCallback();
+			}));
 		}
 	}
 
@@ -840,6 +856,10 @@ Manager::DisplayOptions Manager::getNotificationOptions(
 			&& (!topic || !Data::CanSendTexts(topic)))
 		|| peer->isBroadcast()
 		|| (peer->slowmodeSecondsLeft() > 0);
+	result.spoilerLoginCode = item
+		&& !item->out()
+		&& peer->isNotificationsUser()
+		&& Core::App().isSharingScreen();
 	return result;
 }
 
@@ -1151,7 +1171,9 @@ void NativeManager::doShowNotification(NotificationFields &&fields) {
 		? tr::lng_forward_messages(tr::now, lt_count, fields.forwardedCount)
 		: item->groupId()
 		? tr::lng_in_dlg_album(tr::now)
-		: TextWithPermanentSpoiler(item->notificationText());
+		: TextWithPermanentSpoiler(item->notificationText({
+			.spoilerLoginCode = options.spoilerLoginCode,
+		}));
 
 	// #TODO optimize
 	auto userpicView = item->history()->peer->createUserpicView();

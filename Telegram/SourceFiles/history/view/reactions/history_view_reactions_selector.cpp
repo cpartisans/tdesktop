@@ -777,9 +777,8 @@ void Selector::createList(not_null<Window::SessionController*> controller) {
 	}
 	_list = _scroll->setOwnedWidget(
 		object_ptr<EmojiListWidget>(_scroll, EmojiListDescriptor{
-			.session = &controller->session(),
+			.show = controller->uiShow(),
 			.mode = _listMode,
-			.controller = controller,
 			.paused = [] { return false; },
 			.customRecentList = std::move(recent),
 			.customRecentFactory = std::move(factory),
@@ -945,6 +944,9 @@ AttachSelectorResult MakeJustSelectorMenu(
 	if (!AdjustMenuGeometryForSelector(menu, desiredPosition, selector)) {
 		return AttachSelectorResult::Failed;
 	}
+	if (mode != ChatHelpers::EmojiListMode::RecentReactions) {
+		Ui::Platform::FixPopupMenuNativeEmojiPopup(menu);
+	}
 	const auto selectorInnerTop = menu->preparedPadding().top()
 		- st::reactStripExtend.top();
 	menu->animatePhaseValue(
@@ -1006,6 +1008,7 @@ AttachSelectorResult AttachSelectorToMenu(
 	if (reactions.recent.empty() && !reactions.morePremiumAvailable) {
 		return AttachSelectorResult::Skipped;
 	}
+	const auto withSearch = reactions.customAllowed;
 	const auto selector = Ui::CreateChild<Selector>(
 		menu.get(),
 		controller,
@@ -1014,6 +1017,9 @@ AttachSelectorResult AttachSelectorToMenu(
 		[=](bool fast) { menu->hideMenu(fast); });
 	if (!AdjustMenuGeometryForSelector(menu, desiredPosition, selector)) {
 		return AttachSelectorResult::Failed;
+	}
+	if (withSearch) {
+		Ui::Platform::FixPopupMenuNativeEmojiPopup(menu);
 	}
 	const auto selectorInnerTop = selector->useTransparency()
 		? (menu->preparedPadding().top() - st::reactStripExtend.top())

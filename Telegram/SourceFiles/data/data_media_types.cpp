@@ -62,7 +62,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "core/click_handler_types.h" // ClickHandlerContext
 #include "lang/lang_keys.h"
 #include "storage/file_upload.h"
-#include "window/window_session_controller.h" // Window::Show
+#include "window/window_session_controller.h" // SessionController::uiShow.
 #include "apiwrap.h"
 #include "styles/style_chat.h"
 #include "styles/style_dialogs.h"
@@ -392,11 +392,15 @@ const Invoice *Media::invoice() const {
 	return nullptr;
 }
 
-Data::CloudImage *Media::location() const {
+CloudImage *Media::location() const {
 	return nullptr;
 }
 
 PollData *Media::poll() const {
+	return nullptr;
+}
+
+const WallPaper *Media::paper() const {
 	return nullptr;
 }
 
@@ -1238,7 +1242,7 @@ std::unique_ptr<Media> MediaLocation::clone(not_null<HistoryItem*> parent) {
 		_description);
 }
 
-Data::CloudImage *MediaLocation::location() const {
+CloudImage *MediaLocation::location() const {
 	return _location;
 }
 
@@ -1824,10 +1828,10 @@ ClickHandlerPtr MediaDice::MakeHandler(
 		auto config = Ui::Toast::Config{
 			.text = { tr::lng_about_random(tr::now, lt_emoji, emoji) },
 			.st = &st::historyDiceToast,
-			.durationMs = Ui::Toast::kDefaultDuration * 2,
+			.duration = Ui::Toast::kDefaultDuration * 2,
 			.multiline = true,
 		};
-		if (Data::CanSend(history->peer, ChatRestriction::SendOther)) {
+		if (CanSend(history->peer, ChatRestriction::SendOther)) {
 			auto link = Ui::Text::Link(
 				tr::lng_about_random_send(tr::now).toUpper());
 			link.entities.push_back(
@@ -1853,9 +1857,7 @@ ClickHandlerPtr MediaDice::MakeHandler(
 		const auto my = context.other.value<ClickHandlerContext>();
 		const auto weak = my.sessionWindow;
 		if (const auto strong = weak.get()) {
-			ShownToast = Ui::Toast::Show(
-				Window::Show(strong).toastParent(),
-				config);
+			ShownToast = strong->showToast(std::move(config));
 		} else {
 			ShownToast = Ui::Toast::Show(config);
 		}
@@ -1883,10 +1885,6 @@ int MediaGiftBox::months() const {
 	return _months;
 }
 
-bool MediaGiftBox::allowsRevoke(TimeId now) const {
-	return false;
-}
-
 TextWithEntities MediaGiftBox::notificationText() const {
 	return {};
 }
@@ -1897,10 +1895,6 @@ QString MediaGiftBox::pinnedTextSubstring() const {
 
 TextForMimeData MediaGiftBox::clipboardText() const {
 	return {};
-}
-
-bool MediaGiftBox::forceForwardedInfo() const {
-	return false;
 }
 
 bool MediaGiftBox::updateInlineResultMedia(const MTPMessageMedia &media) {
@@ -1926,6 +1920,52 @@ bool MediaGiftBox::activated() const {
 
 void MediaGiftBox::setActivated(bool activated) {
 	_activated = activated;
+}
+
+MediaWallPaper::MediaWallPaper(
+	not_null<HistoryItem*> parent,
+	const WallPaper &paper)
+: Media(parent)
+, _paper(paper) {
+}
+
+MediaWallPaper::~MediaWallPaper() = default;
+
+std::unique_ptr<Media> MediaWallPaper::clone(not_null<HistoryItem*> parent) {
+	return std::make_unique<MediaWallPaper>(parent, _paper);
+}
+
+const WallPaper *MediaWallPaper::paper() const {
+	return &_paper;
+}
+
+TextWithEntities MediaWallPaper::notificationText() const {
+	return {};
+}
+
+QString MediaWallPaper::pinnedTextSubstring() const {
+	return {};
+}
+
+TextForMimeData MediaWallPaper::clipboardText() const {
+	return {};
+}
+
+bool MediaWallPaper::updateInlineResultMedia(const MTPMessageMedia &media) {
+	return false;
+}
+
+bool MediaWallPaper::updateSentMedia(const MTPMessageMedia &media) {
+	return false;
+}
+
+std::unique_ptr<HistoryView::Media> MediaWallPaper::createView(
+		not_null<HistoryView::Element*> message,
+		not_null<HistoryItem*> realParent,
+		HistoryView::Element *replacing) {
+	return std::make_unique<HistoryView::ServiceBox>(
+		message,
+		std::make_unique<HistoryView::ThemeDocumentBox>(message, _paper));
 }
 
 } // namespace Data

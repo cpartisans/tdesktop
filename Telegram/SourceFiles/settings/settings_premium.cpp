@@ -39,6 +39,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/wrap/fade_wrap.h"
 #include "ui/wrap/slide_wrap.h"
 #include "ui/painter.h"
+#include "ui/power_saving.h"
 #include "window/window_controller.h"
 #include "base/unixtime.h"
 #include "apiwrap.h"
@@ -547,7 +548,7 @@ void EmojiStatusTopBar::paint(QPainter &p) {
 				: QColor(0, 0, 0, 0)),
 			false,
 			crl::now(),
-			_paused);
+			_paused || On(PowerSaving::kEmojiStatus));
 
 		p.drawImage(_rect.toRect(), frame.image);
 		if (!_paused) {
@@ -846,12 +847,10 @@ void TopBarUser::updateTitle(
 	auto link = std::make_shared<LambdaClickHandler>([=,
 			stickerSetIdentifier = stickerInfo->set] {
 		setPaused(true);
-		const auto box = controller->show(
-			Box<StickerSetBox>(
-				controller,
-				stickerSetIdentifier,
-				Data::StickersType::Emoji),
-			Ui::LayerOption::KeepOther);
+		const auto box = controller->show(Box<StickerSetBox>(
+			controller->uiShow(),
+			stickerSetIdentifier,
+			Data::StickersType::Emoji));
 
 		box->boxClosing(
 		) | rpl::start_with_next(crl::guard(this, [=] {

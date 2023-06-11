@@ -15,6 +15,8 @@ class Thread;
 
 namespace Api {
 
+inline constexpr auto kScheduledUntilOnlineTimestamp = TimeId(0x7FFFFFFE);
+
 struct SendOptions {
 	PeerData *sendAs = nullptr;
 	TimeId scheduled = 0;
@@ -25,6 +27,7 @@ struct SendOptions {
 
     std::optional<TimeId> ptgAutoDelete = std::nullopt;
 };
+[[nodiscard]] SendOptions DefaultSendWhenOnlineOptions();
 
 enum class SendType {
 	Normal,

@@ -232,6 +232,18 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_file_size_limit1" = "The document can't be sent, because it is larger than {size}.";
 "lng_file_size_limit2" = "You can double this limit to {size} per document by subscribing to **Telegram Premium**.";
 
+"lng_filter_links_limit_title" = "Limit Reached";
+"lng_filter_links_limit1#one" = "Sorry, you can't create more than **{count}** invite link.";
+"lng_filter_links_limit1#other" = "Sorry, you can't create more than **{count}** invite links.";
+"lng_filter_links_limit2#one" = "You can increase the limit to **{count}** link by subscribing to **Telegram Premium**.";
+"lng_filter_links_limit2#other" = "You can increase the limit to **{count}** links by subscribing to **Telegram Premium**.";
+
+"lng_filter_shared_limit_title" = "Limit Reached";
+"lng_filter_shared_limit1#one" = "Sorry, you can't add more than **{count}** shareable folders.";
+"lng_filter_shared_limit1#other" = "Sorry, you can't add more than **{count}** shareable folders.";
+"lng_filter_shared_limit2#one" = "You can increase the limit up to **{count}** folder by subscribing to **Telegram Premium**.";
+"lng_filter_shared_limit2#other" = "You can increase the limit up to **{count}** folders by subscribing to **Telegram Premium**.";
+
 "lng_limits_increase" = "Increase Limit";
 
 "lng_sticker_premium_text" = "This pack contains premium stickers like this one.";
@@ -373,6 +385,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_dlg_filter" = "Search";
 "lng_dlg_new_group_name" = "Group name";
 "lng_dlg_new_channel_name" = "Channel name";
+"lng_dlg_new_bot_name" = "Bot name";
 "lng_no_chats" = "Your chats will be here";
 "lng_no_chats_filter" = "No chats currently belong to this folder.";
 "lng_contacts_loading" = "Loading...";
@@ -386,7 +399,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_settings_save" = "Save";
 
 "lng_username_title" = "Username";
-"lng_username_description" = "You can choose a username on Telegram. If you do, other people will be able to find you by this username and contact you without knowing your phone number.\n\nYou can use **a-z**, **0-9** and **underscores**.\nMinimum length is **5 characters**.";
+"lng_username_description1" = "You can choose a username on Telegram. If you do, other people will be able to find you by this username and contact you without knowing your phone number.";
+"lng_username_description2" = "You can use **a-z**, **0-9** and **underscores**.\nMinimum length is **5 characters**.";
 "lng_username_choose" = "Choose your username.";
 "lng_username_invalid" = "This username is invalid.";
 "lng_username_occupied" = "This username is already occupied.";
@@ -396,6 +410,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_username_available" = "This username is available.";
 "lng_username_not_found" = "User @{user} not found.";
 "lng_username_by_phone_not_found" = "User {phone} not found.";
+"lng_username_app_not_found" = "Bot application not found.";
 "lng_username_link" = "This link opens a chat with you:";
 "lng_username_copied" = "Link copied to clipboard.";
 
@@ -415,6 +430,13 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_channel_usernames_activate_description" = "Do you want to show this link on the channel info page?";
 "lng_channel_usernames_deactivate_description" = "Do you want to hide this link from the channel info page?";
 "lng_channel_usernames_description" = "Drag and drop links to change the order in which they will be displayed on the channel info page.";
+
+"lng_bot_username_title" = "Username";
+"lng_bot_username_description1" = "This link cannot be edited. You can acquire additional usernames on {link}.";
+"lng_bot_username_description1_link" = "Fragment";
+"lng_bot_usernames_activate_description" = "Do you want to show this link on the bot info page?";
+"lng_bot_usernames_deactivate_description" = "Do you want to hide this link from the bot info page?";
+"lng_bot_usernames_description" = "Drag and drop links to change the order in which they will be displayed on the bot info page.";
 
 "lng_bio_placeholder" = "Bio";
 
@@ -497,6 +519,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_settings_open_system_settings" = "Open Settings";
 "lng_settings_add_sendto" = "Place Telegram in \"Send to\" menu";
 "lng_settings_mac_warn_before_quit" = "Show warning before quitting with {text}";
+"lng_settings_mac_round_icon" = "Round application icon";
 
 "lng_settings_experimental" = "Experimental settings";
 "lng_settings_experimental_about" = "Warning! Those are experimental settings. Some may not work. Others may break the app. Any of them may disappear in the next version without a trace. Use at your own risk.";
@@ -593,7 +616,6 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_settings_version_info" = "Version and updates";
 "lng_settings_system_integration" = "System integration";
 "lng_settings_performance" = "Performance";
-"lng_settings_enable_animations" = "Enable animations";
 "lng_settings_enable_hwaccel" = "Hardware accelerated video decoding";
 "lng_settings_enable_opengl" = "Enable OpenGL rendering for media";
 "lng_settings_angle_backend" = "ANGLE graphics backend";
@@ -608,6 +630,26 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_settings_sensitive_about" = "Display sensitive media in public channels on all your Telegram devices.";
 "lng_settings_security_bots" = "Bots and websites";
 "lng_settings_clear_payment_info" = "Clear Payment and Shipping Info";
+
+"lng_settings_power_menu" = "Battery and Animations";
+"lng_settings_power_title" = "Power Usage";
+"lng_settings_power_subtitle" = "Power saving options";
+"lng_settings_power_stickers" = "Animated Stickers";
+"lng_settings_power_stickers_panel" = "Autoplay in panel";
+"lng_settings_power_stickers_chat" = "Autoplay in chat";
+"lng_settings_power_emoji" = "Animated Emoji";
+"lng_settings_power_emoji_panel" = "Autoplay in panel";
+"lng_settings_power_emoji_reactions" = "Autoplay in reactions menu";
+"lng_settings_power_emoji_chat" = "Autoplay in messages";
+"lng_settings_power_emoji_status" = "Autoplay in premium status";
+"lng_settings_power_chat" = "Animations in Chats";
+"lng_settings_power_chat_background" = "Background rotation";
+"lng_settings_power_chat_spoiler" = "Animated spoiler effect";
+"lng_settings_power_calls" = "Animations in Calls";
+"lng_settings_power_ui" = "Interface animations";
+"lng_settings_power_auto" = "Save Power on Low Battery";
+"lng_settings_power_auto_about" = "Automatically disable all animations when your laptop is in a battery saving mode.";
+"lng_settings_power_turn_off" = "Please turn off Save Power on Low Battery to change these settings.";
 
 "lng_settings_cloud_password_on" = "On";
 "lng_settings_cloud_password_off" = "Off";
@@ -687,7 +729,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_settings_manage_enabled_dictionary" = "Dictionary is enabled";
 "lng_settings_manage_remove_dictionary" = "Remove Dictionary";
 
-"lng_backgrounds_header" = "Choose your new chat background";
+"lng_backgrounds_header" = "Choose Wallpaper";
 "lng_theme_sure_keep" = "Keep this theme?";
 "lng_theme_reverting#one" = "Reverting to the old theme in {count} second.";
 "lng_theme_reverting#other" = "Reverting to the old theme in {count} seconds.";
@@ -707,6 +749,11 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_background_link_copied" = "Link copied to clipboard";
 "lng_background_blur" = "Blurred";
 "lng_background_sure_delete" = "Are you sure you want to delete this background?";
+"lng_background_other_info" = "{user} will be able to apply this wallpaper";
+"lng_background_apply1" = "Apply the wallpaper in this chat.";
+"lng_background_apply2" = "Enjoy the view.";
+"lng_background_apply_button" = "Apply For This Chat";
+"lng_background_dimming" = "Background dimming";
 
 "lng_download_path_ask" = "Ask download path for each file";
 "lng_download_path" = "Download path";
@@ -1009,17 +1056,9 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_self_destruct_sessions_title" = "Session termination";
 "lng_self_destruct_sessions_description" = "If you don't come online from a specific session at least once within this period, it will be terminated.";
 
-"lng_change_phone_title" = "Change phone number";
-"lng_change_phone_about" = "You can change your Telegram number\nhere. Your account and all your cloud data\n— messages, media, contacts, etc. will be\nmoved to the new number.\n\n**Important**: all your Telegram contacts will\nget your **new number** added to their address\nbook, provided they had your old number and\nyou haven't blocked them in Telegram.";
-"lng_change_phone_warning" = "All your Telegram contacts will get your new number added to their address book, provided they had your old number and you haven't blocked them in Telegram.";
-"lng_change_phone_occupied" = "The number {phone} is already connected to a Telegram account. Please delete that account before migrating to the new number.";
-"lng_change_phone_button" = "Change number";
-"lng_change_phone_new_title" = "Enter new number";
-"lng_change_phone_new_description" = "We will send an SMS with a confirmation code to your new number.";
 "lng_change_phone_new_submit" = "Submit";
 "lng_change_phone_code_title" = "Enter code";
-"lng_change_phone_code_description" = "We've sent an SMS with a confirmation code to your phone {phone}.";
-"lng_change_phone_success" = "Your phone number has been changed.";
+"lng_change_phone_error" = "You can only change your phone number using mobile Telegram apps. Please use an official Telegram app on your phone to update your number.";
 
 "lng_mute_menu_mute" = "Mute";
 "lng_mute_menu_unmute" = "Unmute";
@@ -1088,6 +1127,21 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_profile_shared_links#other" = "{count} shared links";
 "lng_profile_copy_phone" = "Copy Phone Number";
 "lng_profile_copy_fullname" = "Copy Name";
+
+"lng_via_link_group_one" = "**{user}** restricts adding them to groups.\nYou can send them an invite link as message instead.";
+"lng_via_link_group_many#one" = "**{count} user** restricts adding them to groups.\nYou can send them an invite link as message instead.";
+"lng_via_link_group_many#other" = "**{count} users** restrict adding them to groups.\nYou can send them an invite link as message instead.";
+"lng_via_link_channel_one" = "**{user}** restricts adding them to channels.\nYou can send them an invite link as message instead.";
+"lng_via_link_channel_many#one" = "**{count} user** restricts adding them to channels.\nYou can send them an invite link as message instead.";
+"lng_via_link_channel_many#other" = "**{count} users** restrict adding them to channels.\nYou can send them an invite link as message instead.";
+"lng_via_link_send" = "Send Invite Link";
+"lng_via_link_cant" = "You can't create a link";
+"lng_via_link_cant_one" = "**{user}** can only by invited via link, but you don't have permission to share invite links to this group.";
+"lng_via_link_cant_many#one" = "**{count} user** can only by invited via link, but you don't have permission to share invite links to this group.";
+"lng_via_link_cant_many#other" = "**{count} users** can only by invited via link, but you don't have permission to share invite links to this group.";
+"lng_via_link_shared_one" = "Link shared with **{user}**.";
+"lng_via_link_shared_many#one" = "Link shared with **{count} user**.";
+"lng_via_link_shared_many#other" = "Link shared with **{count} users**.";
 
 "lng_info_mobile_label" = "Mobile";
 "lng_info_mobile_context_menu_fragment_about" = "This number is not tied to a SIM card and was acquired on {link}.";
@@ -1167,6 +1221,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 "lng_manage_group_title" = "Manage Group";
 "lng_manage_channel_title" = "Manage Channel";
+"lng_manage_bot_title" = "Manage Bot";
 "lng_manage_peer_recent_actions" = "Recent Actions";
 "lng_manage_peer_members" = "Members";
 "lng_manage_peer_subscribers" = "Subscribers";
@@ -1216,6 +1271,14 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_manage_peer_no_forwards" = "Restrict saving content";
 "lng_manage_peer_no_forwards_about" = "Members won't be able to forward messages from this group or save media files.";
 "lng_manage_peer_no_forwards_about_channel" = "Subscribers won't be able to forward messages from this channel or save media files.";
+
+"lng_manage_peer_bot_public_link" = "Public Link";
+"lng_manage_peer_bot_public_links" = "Public Links";
+"lng_manage_peer_bot_edit_intro" = "Edit Intro";
+"lng_manage_peer_bot_edit_commands" = "Edit Commands";
+"lng_manage_peer_bot_edit_settings" = "Change Bot Settings";
+"lng_manage_peer_bot_about" = "Use {bot} to manage this bot.";
+"lng_manage_peer_bot_delete" = "Delete Bot";
 
 "lng_manage_discussion_group" = "Discussion";
 "lng_manage_discussion_group_add" = "Add a group";
@@ -1445,6 +1508,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_action_took_screenshot" = "{from} took a screenshot!";
 "lng_action_you_took_screenshot" = "You took a screenshot!";
 "lng_action_bot_allowed_from_domain" = "You allowed this bot to message you when you logged in on {domain}.";
+"lng_action_bot_allowed_from_app" = "You allowed this bot to message you when you opened {app}.";
 "lng_action_secure_values_sent" = "{user} received the following documents: {documents}";
 "lng_action_secure_personal_details" = "personal details";
 "lng_action_secure_proof_of_identity" = "proof of identity";
@@ -1473,6 +1537,11 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_action_suggested_video" = "{user} suggests you to use this profile video.";
 "lng_action_suggested_video_button" = "View Video";
 "lng_action_attach_menu_bot_allowed" = "You allowed this bot to message you when you added it in the attachment menu.";
+"lng_action_set_wallpaper_me" = "You set a new wallpaper for this chat";
+"lng_action_set_wallpaper" = "{user} set a new wallpaper for this chat";
+"lng_action_set_wallpaper_button" = "View Wallpaper";
+"lng_action_set_same_wallpaper_me" = "You set the same wallpaper for this chat";
+"lng_action_set_same_wallpaper" = "{user} set the same wallpaper for this chat";
 "lng_action_topic_created_inside" = "Topic created";
 "lng_action_topic_closed_inside" = "Topic closed";
 "lng_action_topic_reopened_inside" = "Topic reopened";
@@ -1532,6 +1601,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_group_invite_no_joined" = "No one joined yet";
 "lng_group_invite_joined#one" = "{count} joined";
 "lng_group_invite_joined#other" = "{count} joined";
+"lng_group_invite_joined_via_filter" = "joined via a folder invite link";
 "lng_group_invite_remaining#one" = "{count} remaining";
 "lng_group_invite_remaining#other" = "{count} remaining";
 "lng_group_invite_requested#one" = "{count} requested";
@@ -2304,6 +2374,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_contact_phone_will_be_shared" = "You can make your phone visible to {user}.";
 "lng_edit_contact_title" = "Edit contact name";
 "lng_edit_channel_title" = "Edit channel";
+"lng_edit_bot_title" = "Edit bot";
 "lng_edit_sign_messages" = "Sign messages";
 "lng_edit_group" = "Edit group";
 "lng_edit_self_title" = "Edit your name";
@@ -2398,6 +2469,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_mediaview_set_userpic" = "Set as Main";
 "lng_mediaview_report_profile_photo" = "Report";
 
+"lng_mediaview_title" = "Media viewer";
 "lng_mediaview_saved_to" = "Image was saved to your {downloads} folder";
 "lng_mediaview_saved_images_to" = "Images were saved to your {downloads} folder";
 "lng_mediaview_downloads" = "Downloads";
@@ -2479,7 +2551,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 "lng_payments_webview_no_use" = "Unfortunately, you can't use payments with current system configuration.";
 "lng_payments_webview_install_edge" = "Please install {link}.";
-"lng_payments_webview_install_webkit" = "Please install WebKitGTK (webkit2gtk-5.0/webkit2gtk-4.1/webkit2gtk-4.0) using your package manager.";
+"lng_payments_webview_install_webkit" = "Please install WebKitGTK (webkitgtk-6.0/webkit2gtk-4.1/webkit2gtk-4.0) using your package manager.";
 "lng_payments_webview_update_windows" = "Please update your system to Windows 8.1 or later.";
 "lng_payments_sure_close" = "Are you sure you want to close this payment form? The changes you made will be lost.";
 "lng_payments_receipt_label" = "Receipt";
@@ -2554,6 +2626,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_call_status_failed" = "failed to connect";
 "lng_call_status_ringing" = "ringing...";
 "lng_call_status_busy" = "line busy";
+"lng_call_status_sure" = "Click on the Camera icon if you want to start a video call.";
 "lng_call_fingerprint_tooltip" = "If emoji on {user}'s screen are the same, this call is 100% secure";
 
 "lng_call_error_not_available" = "Sorry, {user} doesn't accept calls.";
@@ -2594,6 +2667,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_call_rate_label" = "Please rate the quality of your call";
 "lng_call_rate_comment" = "Comment (optional)";
 
+"lng_call_start" = "Start Call";
 "lng_call_start_video" = "Start Video";
 "lng_call_stop_video" = "Stop Video";
 "lng_call_screencast" = "Screencast";
@@ -3044,6 +3118,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_admin_log_participant_joined_channel" = "{from} joined the channel";
 "lng_admin_log_participant_joined_by_link" = "{from} joined the group via {link}";
 "lng_admin_log_participant_joined_by_link_channel" = "{from} joined the channel via {link}";
+"lng_admin_log_participant_joined_by_filter_link" = "{from} joined the group via {link} from a folder";
+"lng_admin_log_participant_joined_by_filter_link_channel" = "{from} joined the channel via {link} from a folder";
 "lng_admin_log_participant_approved_by_link" = "{from} was approved to join the group via {link} by {user}";
 "lng_admin_log_participant_approved_by_link_channel" = "{from} was approved to join the channel via {link} by {user}";
 "lng_admin_log_participant_approved_by_request" = "{from} joined to the group via public request, approved by {user}";
@@ -3129,6 +3205,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_admin_log_admin_post_messages" = "Post messages";
 "lng_admin_log_admin_edit_messages" = "Edit messages";
 "lng_admin_log_admin_delete_messages" = "Delete messages";
+"lng_admin_log_admin_remain_anonymous" = "Remain anonymous";
 "lng_admin_log_admin_ban_users" = "Ban users";
 "lng_admin_log_admin_invite_users" = "Add members";
 "lng_admin_log_admin_invite_link" = "Invite users via link";
@@ -3501,11 +3578,83 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_filters_menu_add" = "Add to folder";
 "lng_filters_toast_add" = "{chat} added to {folder} folder";
 "lng_filters_toast_remove" = "{chat} removed from {folder} folder";
+"lng_filters_shareable_status" = "shareable folder";
+
+"lng_filters_delete_sure" = "Are you sure you want to delete this folder? This will also deactivate all the invite links used to share this folder.";
+"lng_filters_link" = "Share Folder";
+"lng_filters_link_has" = "Invite links";
+"lng_filters_link_badge" = "New";
+"lng_filters_link_create" = "Create an Invite Link";
+"lng_filters_link_cant" = "No way to share folders with chat types or excluded chats.";
+"lng_filters_link_about" = "Share access to some of this folder's groups and channels with others.";
+"lng_filters_link_about_many" = "Create more links to set up different access levels for different people.";
+"lng_filters_link_title" = "Share Folder";
+"lng_filters_link_share_about" = "Anyone with this link can add the {folder} folder and the chats selected below.";
+"lng_filters_link_subtitle" = "Invite link";
+"lng_filters_link_chats_none" = "No chats selected";
+"lng_filters_link_chats#one" = "{count} chat selected";
+"lng_filters_link_chats#other" = "{count} chats selected";
+"lng_filters_link_bot_status" = "you can't share chats with bots";
+"lng_filters_link_bot_error" = "Chats with bots can't be shared.";
+"lng_filters_link_private_status" = "you can't share private chats";
+"lng_filters_link_private_error" = "Private chats can't be shared.";
+"lng_filters_link_noadmin_status" = "you can't invite others here";
+"lng_filters_link_noadmin_group_error" = "You don't have the admin rights to share invite links to this private group.";
+"lng_filters_link_noadmin_channel_error" = "You don't have the admin rights to share invite links to this private channel.";
+"lng_filters_link_already_group" = "you are already a member";
+"lng_filters_link_already_channel" = "you are already subscribed";
+"lng_filters_link_inaccessible" = "chat is inaccessible";
+"lng_filters_link_chats_about" = "Select groups and channels that you want everyone who adds the folder via invite link to join.";
+"lng_filters_link_no_about" = "There are no chats in this folder that you can share with others.";
+"lng_filters_link_chats_no" = "These chats cannot be shared";
+"lng_filters_link_chats_no_about" = "You can only share groups and channels in which you are allowed to create invite links.";
+"lng_filters_link_name_it" = "Name Link";
+"lng_filters_link_delete_sure" = "Are you sure you want to delete this link?";
+"lng_filters_link_qr_about" = "Everyone on Telegram can scan this code to add this folder and join the chats included in this invite link.";
+"lng_filters_link_group_admin_error" = "One of the groups in this folder can’t be added because one of its admins has too many groups and channels.";
+"lng_filters_by_link_title" = "Add Folder";
+"lng_filters_by_link_sure" = "Do you want to add a new chat folder {folder} and join its groups and channels?";
+"lng_filters_by_link_join#one" = "{count} chat to join";
+"lng_filters_by_link_join#other" = "{count} chats to join";
+"lng_filters_by_link_add_button" = "Add {folder}";
+"lng_filters_by_link_add_no" = "Do not add this folder";
+"lng_filters_by_link_more" = "Add Chats to Folder";
+"lng_filters_by_link_more_sure" = "Do you want to join chats and add them to the folder {folder}?";
+"lng_filters_by_link_about" = "You can deselect the chats you don't want to join.";
+"lng_filters_by_link_and_join_button#one" = "Join Chat";
+"lng_filters_by_link_and_join_button#other" = "Join Chats";
+"lng_filters_by_link_join_no" = "Do not join any chats";
+"lng_filters_by_link_already" = "Folder already added";
+"lng_filters_by_link_already_about" = "You have already added the folder {folder} and all its chats.";
+"lng_filters_by_link_in#one" = "{count} chat in this folder";
+"lng_filters_by_link_in#other" = "{count} chats in this folder";
+"lng_filters_by_link_remove" = "Remove Folder";
+"lng_filters_by_link_remove_sure" = "Do you also want to quit the chats included in the folder {folder}?";
+"lng_filters_by_link_quit#one" = "{count} chat to quit";
+"lng_filters_by_link_quit#other" = "{count} chats to quit";
+"lng_filters_by_link_select" = "Select All";
+"lng_filters_by_link_deselect" = "Deselect All";
+"lng_filters_by_link_about_quit" = "You can deselect the chats you don't want to quit.";
+"lng_filters_by_link_remove_button" = "Remove Folder and Keep Chats";
+"lng_filters_by_link_and_quit_button#one" = "Remove Folder and Chat";
+"lng_filters_by_link_and_quit_button#other" = "Remove Folder and Chats";
+"lng_filters_added_title" = "Folder {folder} Added";
+"lng_filters_added_also#one" = "You also joined {count} chat.";
+"lng_filters_added_also#other" = "You also joined {count} chats.";
+"lng_filters_updated_title" = "Folder {folder} Updated";
+"lng_filters_updated_also#one" = "You have joined {count} new chat.";
+"lng_filters_updated_also#other" = "You have joined {count} new chats.";
+"lng_filters_bar_you_can#one" = "You can join {count} new chat";
+"lng_filters_bar_you_can#other" = "You can join {count} new chats";
+"lng_filters_bar_view#one" = "Click here to view it";
+"lng_filters_bar_view#other" = "Click here to view them";
 
 "lng_chat_theme_change" = "Change colors";
+"lng_chat_theme_wallpaper" = "Set Wallpaper";
 "lng_chat_theme_none" = "No\nTheme";
 "lng_chat_theme_apply" = "Apply Theme";
-"lng_chat_theme_title" = "Select theme";
+"lng_chat_theme_change_wallpaper" = "Change Wallpaper";
+"lng_chat_theme_title" = "Choose theme";
 "lng_chat_theme_cant_voice" = "Sorry, you can't change the chat theme while you're having an unsent voice message.";
 
 "lng_photo_editor_menu_delete" = "Delete";
@@ -3514,13 +3663,16 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 "lng_voice_speed_slow" = "Slow";
 "lng_voice_speed_normal" = "Normal";
+"lng_voice_speed_medium" = "Medium";
 "lng_voice_speed_fast" = "Fast";
 "lng_voice_speed_very_fast" = "Very fast";
+"lng_voice_speed_super_fast" = "Super fast";
 
 "lng_view_button_user" = "View user";
 "lng_view_button_bot" = "View bot";
 "lng_view_button_group" = "View group";
 "lng_view_button_channel" = "View channel";
+"lng_view_button_bot_app" = "Open app";
 "lng_view_button_background" = "View background";
 "lng_view_button_theme" = "View theme";
 "lng_view_button_message" = "View message";
@@ -3532,6 +3684,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_sponsored_title" = "What are sponsored messages?";
 "lng_sponsored_info_description1" = "Unlike other apps, Telegram never uses your private data to target ads. Sponsored messages on Telegram are based solely on the topic of the public channels in which they are shown. This means that no user data is mined or analyzed to display ads, and every user viewing a channel on Telegram sees the same sponsored messages.\n\nUnlike other apps, Telegram doesn't track whether you tapped on a sponsored message and doesn't profile you based on your activity. We also prevent external links in sponsored messages to ensure that third parties can’t spy on our users. We believe that everyone has the right to privacy, and technological platforms should respect that.\n\nTelegram offers a free and unlimited service to hundreds of millions of users, which involves significant server and traffic costs. In order to remain independent and stay true to its values, Telegram developed a paid tool to promote messages with user privacy in mind. We welcome responsible advertisers at:";
 "lng_sponsored_info_description2" = "Sponsored Messages are currently in test mode. Once they are fully launched and allow Telegram to cover its basic costs, we will start sharing ad revenue with the owners of public channels in which sponsored messages are displayed.\n\nOnline ads should no longer be synonymous with abuse of user privacy. Let us redefine how a tech company should operate – together.";
+"lng_sponsored_info_menu" = "About this ad";
+"lng_sponsored_info_submenu" = "Advertiser: {text}";
 
 "lng_telegram_features_url" = "https://t.me/TelegramTips";
 

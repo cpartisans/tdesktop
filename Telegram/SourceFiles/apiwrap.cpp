@@ -87,7 +87,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/text/text_utilities.h"
 #include "ui/emoji_config.h"
 #include "ui/chat/attach/attach_prepare.h"
-#include "ui/toasts/common_toasts.h"
+#include "ui/toast/toast.h"
 #include "support/support_helper.h"
 #include "settings/settings_premium.h"
 #include "storage/localimageloader.h"
@@ -124,9 +124,16 @@ using UpdatedFileReferences = Data::UpdatedFileReferences;
 	return TimeId(msgId >> 32);
 }
 
-[[nodiscard]] std::shared_ptr<Window::Show> ShowForPeer(
+[[nodiscard]] std::shared_ptr<ChatHelpers::Show> ShowForPeer(
 		not_null<PeerData*> peer) {
-	return std::make_shared<Window::Show>(Core::App().windowFor(peer));
+	if (const auto window = Core::App().windowFor(peer)) {
+		if (const auto controller = window->sessionController()) {
+			if (&controller->session() == &peer->session()) {
+				return controller->uiShow();
+			}
+		}
+	}
+	return nullptr;
 }
 
 void ShowChannelsLimitBox(not_null<PeerData*> peer) {
@@ -383,6 +390,16 @@ void ApiWrap::checkChatInvite(
 	)).done(std::move(done)).fail(std::move(fail)).send();
 }
 
+void ApiWrap::checkFilterInvite(
+		const QString &slug,
+		FnMut<void(const MTPchatlists_ChatlistInvite &)> done,
+		Fn<void(const MTP::Error &)> fail) {
+	request(base::take(_checkFilterInviteRequestId)).cancel();
+	_checkFilterInviteRequestId = request(
+		MTPchatlists_CheckChatlistInvite(MTP_string(slug))
+	).done(std::move(done)).fail(std::move(fail)).send();
+}
+
 void ApiWrap::savePinnedOrder(Data::Folder *folder) {
 	const auto &order = _session->data().pinnedChatsOrder(folder);
 	const auto input = [](Dialogs::Key key) {
@@ -478,13 +495,12 @@ void ApiWrap::sendMessageFail(
 		uint64 randomId,
 		FullMsgId itemId) {
 	const auto show = ShowForPeer(peer);
-
-	if (error == u"PEER_FLOOD"_q) {
+	if (show && error == u"PEER_FLOOD"_q) {
 		show->showBox(
 			Ui::MakeInformBox(
 				PeerFloodErrorText(&session(), PeerFloodType::Send)),
 			Ui::LayerOption::CloseOther);
-	} else if (error == u"USER_BANNED_IN_CHANNEL"_q) {
+	} else if (show && error == u"USER_BANNED_IN_CHANNEL"_q) {
 		const auto link = Ui::Text::Link(
 			tr::lng_cant_more_info(tr::now),
 			session().createInternalLinkFull(u"spambot"_q));
@@ -513,21 +529,16 @@ void ApiWrap::sendMessageFail(
 		Assert(peer->isUser());
 		if (const auto item = scheduled.lookupItem(peer->id, itemId.msg)) {
 			scheduled.removeSending(item);
-			show->showBox(
-				Ui::MakeInformBox(tr::lng_cant_do_this()),
-				Ui::LayerOption::CloseOther);
+			if (show) {
+				show->showBox(
+					Ui::MakeInformBox(tr::lng_cant_do_this()),
+					Ui::LayerOption::CloseOther);
+			}
 		}
-	} else if (error == u"CHAT_FORWARDS_RESTRICTED"_q) {
-		if (show->valid()) {
-			Ui::ShowMultilineToast({
-				.parentOverride = show->toastParent(),
-				.text = { peer->isBroadcast()
-					? tr::lng_error_noforwards_channel(tr::now)
-					: tr::lng_error_noforwards_group(tr::now)
-				},
-				.duration = kJoinErrorDuration
-			});
-		}
+	} else if (show && error == u"CHAT_FORWARDS_RESTRICTED"_q) {
+		show->showToast(peer->isBroadcast()
+			? tr::lng_error_noforwards_channel(tr::now)
+			: tr::lng_error_noforwards_group(tr::now), kJoinErrorDuration);
 	} else if (error == u"PREMIUM_ACCOUNT_REQUIRED"_q) {
 		Settings::ShowPremium(&session(), "premium_stickers");
 	}
@@ -1696,12 +1707,8 @@ void ApiWrap::joinChannel(not_null<ChannelData*> channel) {
 					}
 					return QString();
 				}();
-				if (!text.isEmpty() && show->valid()) {
-					Ui::ShowMultilineToast({
-						.parentOverride = show->toastParent(),
-						.text = { text },
-						.duration = kJoinErrorDuration,
-					});
+				if (!text.isEmpty()) {
+					show->showToast(text, kJoinErrorDuration);
 				}
 			}
 			_channelAmInRequests.remove(channel);
@@ -2064,8 +2071,8 @@ void ApiWrap::applyAffectedMessages(
 }
 
 void ApiWrap::saveCurrentDraftToCloud() {
+	Core::App().materializeLocalDrafts();
 	for (const auto &controller : _session->windows()) {
-		controller->materializeLocalDrafts();
 		if (const auto thread = controller->activeChatCurrent().thread()) {
 			const auto topic = thread->asTopic();
 			if (topic && topic->creating()) {
@@ -3717,7 +3724,8 @@ void ApiWrap::sendBotStart(
 		applyUpdates(result);
 	}).fail([=](const MTP::Error &error) {
 		if (chat) {
-			ShowAddParticipantsError(error.type(), chat, { 1, bot });
+			const auto type = error.type();
+			ShowAddParticipantsError(type, chat, { 1, bot });
 		}
 	}).send();
 }

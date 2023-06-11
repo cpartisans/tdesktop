@@ -157,7 +157,7 @@ void ShowCallsBox(not_null<Window::SessionController*> window) {
 					Window::SectionShow(anim::type::instant));
 			};
 			const auto clearAll = crl::guard(box, [=] {
-				Ui::BoxShow(box).showBox(Box(Calls::ClearCallsBox, window));
+				box->uiShow()->showBox(Box(Calls::ClearCallsBox, window));
 			});
 			state->menu->addAction(
 				tr::lng_settings_section_call_settings(tr::now),
@@ -680,7 +680,7 @@ void MainMenu::setupAccounts() {
 	inner->add(object_ptr<Ui::FixedHeightWidget>(inner, st::mainMenuSkip));
 
 	std::move(
-		events.currentAccountActivations
+		events.closeRequests
 	) | rpl::start_with_next([=] {
 		closeLayer();
 	}, inner->lifetime());
