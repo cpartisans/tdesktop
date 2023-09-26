@@ -15,10 +15,30 @@ The source code is published under GPLv3 with OpenSSL exception, the license is 
 
 The latest version is available for
 
-* [Windows 7 and above (64, 32 bit)](https://github.com/wrwrabbit/tdesktop/actions?query=branch%3Amaster+workflow%3AWindows.++)
-* [macOS 10.12 and above](https://github.com/wrwrabbit/tdesktop/actions?query=branch%3Amaster+workflow%3AMacOS.)
-* [Linux static build for 64 bit](https://github.com/wrwrabbit/tdesktop/actions?query=branch%3Amaster+workflow%3ALinux.)
-* [Snap](https://github.com/wrwrabbit/tdesktop/actions?query=branch%3Amaster+workflow%3ASnap.)
+* [Windows 7 and above (64 bit)](https://telegram.org/dl/desktop/win64) ([portable](https://telegram.org/dl/desktop/win64_portable))
+* [Windows 7 and above (32 bit)](https://telegram.org/dl/desktop/win) ([portable](https://telegram.org/dl/desktop/win_portable))
+* [macOS 10.13 and above](https://telegram.org/dl/desktop/mac)
+* [Linux static build for 64 bit](https://telegram.org/dl/desktop/linux)
+* [Snap](https://snapcraft.io/telegram-desktop)
+* [Flatpak](https://flathub.org/apps/details/org.telegram.desktop)
+
+## Old system versions
+
+Version **4.9.9** was the last that supports older systems
+
+* [macOS 10.12](https://updates.tdesktop.com/tmac/tsetup.4.9.9.dmg)
+* [Linux with glibc < 2.28 static build](https://updates.tdesktop.com/tlinux/tsetup.4.9.9.tar.xz)
+
+Version **2.4.4** was the last that supports older systems
+
+* [OS X 10.10 and 10.11](https://updates.tdesktop.com/tosx/tsetup-osx.2.4.4.dmg)
+* [Linux static build for 32 bit](https://updates.tdesktop.com/tlinux32/tsetup32.2.4.4.tar.xz)
+
+Version **1.8.15** was the last that supports older systems
+
+* [Windows XP and Vista](https://updates.tdesktop.com/tsetup/tsetup.1.8.15.exe) ([portable](https://updates.tdesktop.com/tsetup/tportable.1.8.15.zip))
+* [OS X 10.8 and 10.9](https://updates.tdesktop.com/tmac/tsetup.1.8.15.dmg)
+* [OS X 10.6 and 10.7](https://updates.tdesktop.com/tmac32/tsetup32.1.8.15.dmg)
 
 ## Third-party
 
