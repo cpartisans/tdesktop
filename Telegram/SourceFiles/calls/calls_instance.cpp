@@ -199,7 +199,9 @@ Instance::~Instance() {
 	}
 }
 
-void Instance::startOutgoingCall(not_null<UserData*> user, bool video) {
+void Instance::startOutgoingCall(
+		not_null<UserData*> user,
+		StartOutgoingCallArgs args) {
 	if (activateCurrentCall()) {
 		return;
 	}
@@ -213,8 +215,8 @@ void Instance::startOutgoingCall(not_null<UserData*> user, bool video) {
 		return;
 	}
 	requestPermissionsOrFail(crl::guard(this, [=] {
-		createCall(user, Call::Type::Outgoing, video);
-	}), video);
+		createCall(user, Call::Type::Outgoing, args);
+	}), args.video);
 }
 
 void Instance::startOrJoinGroupCall(
@@ -416,7 +418,7 @@ void Instance::destroyCall(not_null<Call*> call) {
 void Instance::createCall(
 		not_null<UserData*> user,
 		CallType type,
-		bool isVideo) {
+		StartOutgoingCallArgs args) {
 	struct Performer final {
 		explicit Performer(Fn<void(bool, bool, const Performer &)> callback)
 		: callback(std::move(callback)) {
@@ -458,7 +460,7 @@ void Instance::createCall(
 		}
 		_currentCallChanges.fire_copy(raw);
 	});
-	performer.callback(isVideo, false, performer);
+	performer.callback(args.video, args.isConfirmed, performer);
 }
 
 void Instance::destroyGroupCall(not_null<GroupCall*> call) {
@@ -715,7 +717,7 @@ void Instance::handleCallUpdate(
 			LOG(("Ignoring too old call."));
 		} else {
 			if (!isHiddenAccount(user->session().account())) {
-				createCall(user, Call::Type::Incoming, phoneCall.is_video());
+				createCall(user, Call::Type::Incoming, { phoneCall.is_video() });
 				_currentCall->handleUpdate(call);
 			}
 		}

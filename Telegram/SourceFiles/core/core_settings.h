@@ -901,6 +901,13 @@ public:
 		_ivPosition = position;
 	}
 
+	[[nodiscard]] const WindowPosition &callPanelPosition() const {
+		return _callPanelPosition;
+	}
+	void setCallPanelPosition(const WindowPosition &position) {
+		_callPanelPosition = position;
+	}
+
 	[[nodiscard]] QString customFontFamily() const {
 		return _customFontFamily;
 	}
@@ -1083,6 +1090,7 @@ private:
 	rpl::variable<bool> _storiesClickTooltipHidden = false;
 	rpl::variable<bool> _ttlVoiceClickTooltipHidden = false;
 	WindowPosition _ivPosition;
+	WindowPosition _callPanelPosition;
 	QString _customFontFamily;
 	bool _systemUnlockEnabled = false;
 	std::optional<bool> _weatherInCelsius;

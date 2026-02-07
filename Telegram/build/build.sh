@@ -289,6 +289,8 @@ if [ "$BuildTarget" == "mac" ] || [ "$BuildTarget" == "macstore" ]; then
       else
         ./configure.sh -D DESKTOP_APP_MAC_ARCH="arm64;x86_64"
       fi
+      # not use -DDESKTOP_APP_ENABLE_LTO=ON from original
+      # ./configure.sh -D DESKTOP_APP_MAC_ARCH="arm64;x86_64" -DDESKTOP_APP_ENABLE_LTO=ON
 
       cd $ProjectPath
       cmake --build . --config Release --target Telegram
