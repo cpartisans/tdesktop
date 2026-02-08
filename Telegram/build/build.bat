@@ -194,6 +194,8 @@ if %AlphaVersion% neq 0 (
 cd "%HomePath%"
 
 call configure.bat -DDESKTOP_APP_NO_PDB=ON
+rem Not using -DDESKTOP_APP_ENABLE_LTO=ON
+rem call configure.bat -DDESKTOP_APP_ENABLE_LTO=ON
 if %errorlevel% neq 0 goto error
 
 cd "%SolutionPath%"
