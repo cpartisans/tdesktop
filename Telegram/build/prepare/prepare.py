@@ -1808,7 +1808,7 @@ win:
         -Dprotobuf_BUILD_TESTS=OFF ^
         -Dprotobuf_BUILD_PROTOBUF_BINARIES=ON ^
         -Dprotobuf_BUILD_LIBPROTOC=ON ^
-        -Dprotobuf_WITH_ZLIB_DEFAULT=OFF ^
+        -Dprotobuf_WITH_ZLIB=OFF ^
         -Dprotobuf_DEBUG_POSTFIX=""
     cmake --build . --config Release
     cmake --build . --config Debug

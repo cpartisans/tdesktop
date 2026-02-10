@@ -35,7 +35,7 @@ jobs:
 
     strategy:
       matrix:
-        arch: [Win32, x64]
+        arch: [x64_x86, x64]
 
     env:
       UPLOAD_ARTIFACT: "true"
@@ -86,11 +86,10 @@ jobs:
 
       - name: Libraries.
         env:
-          #GYP_MSVS_OVERRIDE_PATH: 'C:\Program Files\Microsoft Visual Studio\2022\Community\'
+          GYP_MSVS_OVERRIDE_PATH: 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\'
           GYP_MSVS_VERSION: 2022
         run: |
-          cd %TBUILD%
-          %REPO_NAME%\Telegram\build\prepare\win.bat silent
+          %TBUILD%\%REPO_NAME%\Telegram\build\prepare\win.bat
 
       - name: Read configuration matrix.
         shell: bash
@@ -100,7 +99,7 @@ jobs:
           ARCH=""
           if [ -n "${{ matrix.arch }}" ]; then
             case "${{ matrix.arch }}" in
-              Win32) ARCH="x86";;
+              x64_x86) ARCH="x86";;
               *) ARCH="${{ matrix.arch }}";;
             esac
             echo "Architecture from matrix: $ARCH"

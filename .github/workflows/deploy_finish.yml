@@ -138,7 +138,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               release_id: ${{ steps.create_release.outputs.id }},
-              data: await fs.readFile('Windows/Telegram_Win32/tportable.latest.zip')
+              data: await fs.readFile('Windows/Telegram_x64_x86/tportable.latest.zip')
             });
 
       - name: Upload Linux Files

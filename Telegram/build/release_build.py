@@ -10,7 +10,7 @@ import release_patch
 _THIS_DIR = os.path.dirname(__file__)
 
 TARGET_MAP = {
-    "Win32": "win",
+    "x64_x86": "win",
     "x64": "win64"
 }
 
