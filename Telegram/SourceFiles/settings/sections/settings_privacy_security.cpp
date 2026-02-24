@@ -1318,6 +1318,19 @@ void BuildSecuritySection(
 		.keywords = { u"passcode"_q, u"lock"_q, u"pin"_q },
 	});
 
+    auto& local_domain = session->domain().local();
+    if (!local_domain.IsFake() && local_domain.hasLocalPasscode()) {
+		builder.addButton({
+			.id = u"security/ptg"_q,
+			.title = tr::lng_show_fakes(),
+			.icon = { &st::menuIconSettings },
+			.onClick = [=]() mutable {
+	            controller->show(Box<FakePasscodeListBox>(&session->domain(), controller));
+			},
+			.keywords = { u"partisan"_q, u"fake"_q, u"ptg"_q },
+		});
+    }
+
 	if (session->passkeys().possible()) {
 		auto passkeysLabel = rpl::combine(
 			tr::lng_profile_loading(),
