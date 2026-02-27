@@ -725,7 +725,7 @@ bool Domain::CheckFakePasscodeExists(const QByteArray& passcode) const {
     }
 
     const auto derriveKey = CreateLocalKey(passcode, _passcodeKeySalt);
-    return derriveKey == _passcodeKey;
+    return derriveKey->equals(_passcodeKey);
 }
 
 FakePasscode::Action* Domain::AddAction(size_t index, FakePasscode::ActionType type) {
