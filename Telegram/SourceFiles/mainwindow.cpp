@@ -757,14 +757,18 @@ void MainWindow::updateControlsGeometry() {
 	if (_main) _main->checkMainSectionToLayer();
 }
 
-void MainWindow::sendPaths() {
+void MainWindow::handleStartFiles(
+		QStringList interprets,
+		QStringList paths) {
 	if (controller().locked()) {
 		return;
 	}
 	Core::App().hideMediaView();
 	ui_hideSettingsAndLayer(anim::type::instant);
 	if (_main) {
-		_main->activate();
+		_main->handleStartFiles(
+			std::move(interprets),
+			std::move(paths));
 	}
 }
 
