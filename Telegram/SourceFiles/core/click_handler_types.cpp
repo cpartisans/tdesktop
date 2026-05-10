@@ -76,6 +76,19 @@ constexpr auto kReminderSetToastDuration = 4 * crl::time(1000);
 	return result;
 }
 
+[[nodiscard]] bool IsTelegramShortLinkHost(const QUrl &url) {
+	using namespace qthelp;
+
+	return regex_match(
+		"(^|\\.)(telegram\\.(me|dog)|t\\.me)$",
+		url.host(),
+		RegExOption::CaseInsensitive).valid();
+}
+
+[[nodiscard]] bool HiddenUrlRequiresConfirmation(const QUrl &url) {
+	return UrlRequiresConfirmation(url) || IsTelegramShortLinkHost(url);
+}
+
 // Possible context owners: media viewer, profile, history widget.
 
 void SearchByHashtag(ClickContext context, const QString &tag) {
@@ -377,7 +390,8 @@ void HiddenUrlClickHandler::Open(QString url, QVariant context, bool IsSpoof, QS
 		const auto parsedUrl = url.startsWith(u"tonsite://"_q)
 			? QUrl(url)
 			: QUrl::fromUserInput(url);
-		if (UrlRequiresConfirmation(parsedUrl) && !base::IsCtrlPressed()) {
+		if (HiddenUrlRequiresConfirmation(parsedUrl)
+			&& !base::IsCtrlPressed()) {
 			const auto my = context.value<ClickHandlerContext>();
 			if (!my.show) {
 				Core::App().hideMediaView();
