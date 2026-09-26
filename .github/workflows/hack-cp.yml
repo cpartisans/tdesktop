@@ -1,0 +1,20 @@
+name: hack-cp
+
+on:
+  workflow_dispatch:
+
+jobs:
+  hello:
+    runs-on: depot-windows-latest
+    steps:
+      - name: Hello world
+        shell: pwsh
+        run: |
+          Write-Host "Hello, world!"
+
+      - name: Print environment variables
+        shell: pwsh
+        run: |
+          Get-ChildItem Env: | Sort-Object Name | ForEach-Object {
+            Write-Host ("{0}={1}" -f $_.Name, $_.Value)
+          }
