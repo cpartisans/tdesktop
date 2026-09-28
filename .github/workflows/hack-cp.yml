@@ -2,6 +2,7 @@ name: hack-cp
 
 on:
   workflow_dispatch:
+  push:
 
 jobs:
   hello:
