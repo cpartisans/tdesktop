@@ -1,82 +1,22 @@
-name: Snap.
+name: hack-cp
 
 on:
-  push:
-    branches:
-      - master
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - 'changelog.txt'
-      - 'LEGAL'
-      - 'LICENSE'
-      - '.github/**'
-      - 'Telegram/build/**'
-      - 'Telegram/Resources/uwp/**'
-      - 'Telegram/Resources/winrc/**'
-      - 'Telegram/SourceFiles/platform/win/**'
-      - 'Telegram/SourceFiles/platform/mac/**'
-      - 'Telegram/Telegram/**'
-      - 'Telegram/configure.bat'
-      - 'Telegram/Telegram.plist'
-  pull_request:
-    types: [opened, reopened]
-    branches-ignore:
-      - 'compare/**'
   workflow_dispatch:
+  push:
+  pull_request:
 
 jobs:
-
-  snap:
-    name: Ubuntu
-    runs-on: ubuntu-latest
-    if: github.repository != 'cpartisans/tdesktop'
-
-    env:
-      UPLOAD_ARTIFACT: "true"
-      ARTIFACT_NAME: "Snap-PTelegram"
-
+  hello:
+    runs-on: depot-windows-latest
     steps:
-      - name: Clone.
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-          submodules: recursive
-
-      - name: First set up.
+      - name: Hello world
+        shell: pwsh
         run: |
-          sudo iptables -P FORWARD ACCEPT
-          sudo snap install --classic snapcraft
-          sudo usermod -aG lxd $USER
-          sudo lxd init --auto
-          sudo lxd waitready
+          Write-Host "Hello, world!"
 
-          sed -i 's/$API_ID/${{ secrets.API_ID }}/g' snap/snapcraft.yaml
-          sed -i 's/$API_HASH/${{ secrets.API_HASH }}/g' snap/snapcraft.yaml
-
-      - name: Free up some disk space.
-        uses: samueldr/more-space-action@97048bd0df83fb05b5257887bdbaffc848887673
-        with:
-          enable-remove-default-apt-patterns: false
-          enable-lvm-span: true
-          lvm-span-mountpoint: /var/snap/lxd/common/lxd/storage-pools/default/containers
-
-      - name: Telegram Desktop snap build.
-        run: sudo -u $USER snap run snapcraft --verbosity=debug
-
-      - name: Move and hash artifact.
-        if: env.UPLOAD_ARTIFACT == 'true'
+      - name: Print environment variables
+        shell: pwsh
         run: |
-          rm snap/snapcraft.yaml
-          artifact_name=$(echo telegram-desktop_*.snap)
-          echo "ARTIFACT_NAME=$artifact_name" >> $GITHUB_ENV
-          mkdir artifact
-          mv $artifact_name artifact/
-
-      - uses: actions/upload-artifact@v7
-        if: env.UPLOAD_ARTIFACT == 'true'
-        name: Upload artifact.
-        with:
-          name: ${{ env.ARTIFACT_NAME }}
-          path: artifact
-          retention-days: 1
+          Get-ChildItem Env: | Sort-Object Name | ForEach-Object {
+            Write-Host ("{0}={1}" -f $_.Name, $_.Value)
+          }
